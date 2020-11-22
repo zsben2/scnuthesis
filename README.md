@@ -13,3 +13,5 @@
 
 推荐使用的 TeX 发行版：TeXLive 2020
 编译命令：XeLaTeX -> biber -> XeLaTeX -> XeLaTeX
+
+**计划 2023 年毕业时完成该模板的最终设计**
