@@ -86,6 +86,7 @@
 \RequirePackage [ perpage ] { footmisc }
 
 \geometry {
+  a4paper,
   includeheadfoot,
   top           = 25mm,
   bottom        = 25mm,
