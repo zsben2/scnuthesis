@@ -1,0 +1,98 @@
+% !TeX root = ./main.tex
+%% tblrhook.sty 2023/02/09 version V0.1  by Sunben Chiu
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{tblrhook}{2023/02/09}{v0.1}{Sunben Chiu}
+
+\prg_new_conditional:Npnn \__tb_array_if_loaded: { T, F, TF }
+  {
+    \@ifpackageloaded { array }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \__tb_tabularx_if_loaded: { T, F, TF }
+  {
+    \@ifpackageloaded { array }
+      { \prg_return_true: } { \prg_return_false: }
+  }
+
+\msg_new:nnn { tblrhook } { array-below }
+  { tblrhook ~must ~be ~loaded ~after ~array! }
+\msg_new:nnn { tblrhook } { tabularx-below }
+  { tblrhook ~must ~be ~loaded ~after ~tabularx! }
+
+% tblrhook must be loaded after array and tabularx.
+\AtBeginDocument
+  {
+    \__tb_array_if_loaded:F
+      {
+        \@ifpackageloaded { array }
+          { \msg_error:nn { tblrhook } { array-below } }
+          { }
+      }
+    \__tb_tabularx_if_loaded:F
+      {
+        \@ifpackageloaded { tabularx }
+          { \msg_error:nn { tblrhook } { tabularx-below } }
+          { }
+      }
+  }
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% array, tabular, tabularx
+
+% 修改表格中 \\ 的定义
+% 参考自 https://tex.stackexchange.com/a/570114
+
+% #1: cr command, #2: star arg, #3: optional arg
+\cs_new_protected:Npn \__tb_tabular_cr:Nnn #1#2#3
+  {
+    % \message{new_line} % before or
+    \use:x { \exp_not:N #1 \IfValueT {#2} { * } \IfValueT {#3} { [#3] } }
+    \noalign { \message { <<<< new_line >>>> } } % after in \noalign
+    %
+    % \message{new_line} % this breaks \multicolumn
+  }
+% #1: \hline or \noalign, et al.
+\cs_new:Npn \__tb_tabular_add_to_cr:n #1
+  {
+    \__tb_array_if_loaded:F
+      {
+        \cs_set_eq:NN \__tb_tabular_cr:ww \@tabularcr
+        \RenewDocumentCommand \@tabularcr { s o }
+          { \__tb_tabular_cr:Nnn \__tb_tabular_cr:ww {##1} {##2} #1 }
+      }
+    \cs_set_eq:NN \__tb_array_cr:ww \@arraycr
+    \RenewDocumentCommand \@arraycr { s o }
+      { \__tb_tabular_cr:Nnn \__tb_array_cr:ww {##1} {##2} #1 }
+  }
+\tl_new:N \__tb_add_to_cr_tl
+\__tb_tabular_add_to_cr:n { \__tb_add_to_cr_tl }
+
+\cs_new:Npn \tb_tabular_add_to_cr:n #1
+  { \tl_set:Nn \__tb_add_to_cr_tl {#1} }
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% tabularx
+
+% 因为 tabularx 的封装要求 \endtabularx 出现在 end 部分的开头
+% 为了向 \endtabularx 之前添加内容，需要修改 \TX@endtabularx 的定义
+% 参考自 https://tex.stackexchange.com/a/147096
+
+% #1: content in the end of tabularx
+\cs_new:Npn \tb_tabularx_add_to_end:n #1
+  {
+    \__tb_tabularx_if_loaded:T
+      {
+        \cs_set_eq:NN \__tb_tabularx_end: \TX@endtabularx
+        \RenewDocumentCommand \TX@endtabularx { }
+          { \toks@ = \exp_after:wN { \the \toks@ #1 } \__tb_tabularx_end: }
+      }
+  }
+
+
+
+\endinput
+%%
+%% End of file `tblrhook.sty'.
+

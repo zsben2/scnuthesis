@@ -16,6 +16,7 @@
   title = {How to use the \LaTeX3 Document Class for SCNU Dissertations},
   姓名 = {张三},
   name = {Zhang San},
+  手机号 = {13112345678},
   email = {123456789@qq.com},
   专业名称 = {基础数学},
   major = {Basic mathematics},
@@ -24,22 +25,23 @@
   导师姓名 = {李四},
   tutor = {Li Si},
   导师职称 = {教授},
+  date = {\today},
   bib文件名 = {ref.bib},
   % 所有图片、扫描件都要放在 ./fig/ 文件夹下
   签名图 = {signature.pdf},
-  答辩通过证明 = {答辩合格证明.pdf},
+%  答辩通过证明 = {答辩合格证明.pdf},
 %  原创授权声明 = {statement.jpg},
 }
 
 % 粗体标签、宋体内容样式
-\addtheorem[chinesedefinition]{
+\addtheorem[cndefinition]{
   definition = 定义,
   assume     = 假设,
   lemma      = 引理,
   question   = 问题,
 }[chapter]
 % 粗体标签、楷体内容样式
-\addtheorem[chineseplain]{
+\addtheorem[cnplain]{
   exercise    = 练习,
   example     = 例,
   theorem     = 定理,
@@ -48,7 +50,7 @@
   conjecture  = 猜想,
 }[chapter]
 % 楷体标签、宋体内容样式
-\addtheorem[chineseremark]{
+\addtheorem[cnremark]{
   remark = 注,
 }[chapter]
 
@@ -57,7 +59,7 @@
 
 \makecover
 
-\passdefense
+\electronicinput{data/passdefense}
 
 \frontmatter
 
@@ -81,8 +83,8 @@
 
 \backmatter
 
-\blindinput{data/resume}
-\blindinput{data/acknowledgement}
+\unblindinput{data/resume}
+\unblindinput{data/acknowledgement}
 
 \statement
 

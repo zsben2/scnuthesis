@@ -1,0 +1,41 @@
+% !TeX root = ./main.tex
+%% l3group.sty 2023/02/09 version V1.0  by Sunben Chiu
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{l3group}{2023/02/09}{v1.0}{Sunben Chiu}
+
+% Decorator
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% group decorator
+
+% #1: function, #2: parameters, #3: code
+\cs_new:Npn \group_cs_new:Npn #1#2#
+  { \__group_cs_new:Nnn #1 {#2} }
+% #1: function, #2: parameters, #3: code
+\cs_new:Npn \__group_cs_new:Nnn #1#2#3
+  { \cs_new:Npn #1 #2 { \group_use:n {#3} } }
+% #1: inner tokens
+\cs_new:Npn \group_use:n #1
+  { \group_begin: #1 \group_end: }
+
+% #1: tl var, #2: text
+\cs_new:Npn \group_tl_set:Nn #1#2
+  { \group_tl_set:Nnn #1 { } {#2} }
+% #1: tl val, #2: format, #3: text
+\cs_new:Npn \group_tl_set:Nnn #1#2#3
+  {
+    \exp_last_unbraced:Ne \__group_tl_generate_conditional:nnNnn
+      { \cs_split_function:N #1 } {#2} {#3}
+  }
+% #1: name, #2: signature, #3: logic token, #4: format, #5: text
+\cs_new:Npn \__group_tl_generate_conditional:nnNnn #1#2#3#4#5
+  {
+    \tl_set:cn { #1 _f } {#4} % format
+    \tl_set:cn { #1 _t } {#5} % text
+    \tl_set:cn {#1} { \group_use:n {#4#5} }
+  }
+
+\endinput
+%%
+%% End of file `l3group.sty'.
+

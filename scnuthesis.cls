@@ -3,10 +3,11 @@
 %% scnuthesis.cls 2020/09/26 version V0.1  by Sunben Chiu
 %% scnuthesis.cls 2022/12/26 version V0.2  by Sunben Chiu
 %% scnuthesis.cls 2023/02/05 version V0.3  by Sunben Chiu
+%% scnuthesis.cls 2023/02/10 version V0.4  by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2022/02/05}{v0.3}{Sunben Chiu}
+\ProvidesExplClass{scnuthesis}{2023/02/10}{v0.4}{Sunben Chiu}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
 \cs_new:Npn \__scnu_msg_error:nn { \msg_error:nnn { scnuthesis } }
@@ -102,7 +103,7 @@
 
 \setmainfont { Times ~ New ~ Roman }
 
-\xeCJKsetup{
+\xeCJKsetup {
   AutoFallBack   = true,
   underline/skip = false,
 }
@@ -157,9 +158,12 @@
 \RequirePackage
   {
     mathtools, amsthm, amssymb, tabularx, booktabs, pdfpages,
-    graphicx, subfigure, caption, fancyhdr, pifont, stfloats,
-    wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp
+    graphicx, subfigure, caption, fancyhdr, stfloats, xpatch,
+    wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp,
   }
+% 自定义宏包
+\clist_map_inline:nn { l3group, tblrhook, circlenum }
+  { \RequirePackage { tools / #1 } }
 \cs_undefine:N \Bbbk
 \RequirePackage { mtpro2 }
 \RequirePackage [
@@ -222,9 +226,7 @@
 \RenewExpandableDocumentCommand \theequation { } { \thechapter . \arabic { equation } }
 \RenewExpandableDocumentCommand \thefigure   { } { \thechapter . \arabic { figure   } }
 \RenewExpandableDocumentCommand \thetable    { } { \thechapter . \arabic { table    } }
-\RenewExpandableDocumentCommand \thefootnote { } { \__scnu_circle_num:n  { footnote } }
-
-
+\RenewExpandableDocumentCommand \thefootnote { } { \circlenum_printing:n { footnote } }
 
 
 % 数学元素
@@ -236,24 +238,17 @@
 
 % amsthm宏包调整定理环境前后额外间距的方式
 % \setlength\topsep{0pt}
-% 通过查amsthm.sty文件第434行，消除证明环境前后额外间距，需要etoolbox
+% 通过查amsthm.sty文件第434行，消除证明环境前后额外间距，需要etoolbox或xpatch
 % \AtBeginEnvironment{proof}{
 %   \vspace{-6\p@\@minus6\p@}
 % }
 % \AtEndEnvironment{proof}{
 %   \vspace{-6\p@\@minus6\p@}
 % }
-% 修改证明标签的样式
-\renewenvironment{proof}[1][\proofname]{\par
-  \pushQED{\qed}%
-  \normalfont \topsep6\p@\@plus6\p@\relax
-  \trivlist
-  \item[\hskip\labelsep
-        \kaishu
-    #1\@addpunct{.}]\ignorespaces
-}{%
-  \popQED\endtrivlist\@endpefalse
-}
+% 修改证明标签的字体样式
+% 参考自 https://tex.stackexchange.com/a/44114
+\xpatchcmd { \proof } { \itshape } { \kaishu } { } { }
+
 
 
 
@@ -261,7 +256,7 @@
 % 定理环境统一设置
 
 % 定理环境风格汉化
-\newtheoremstyle { chineseplain } % name
+\newtheoremstyle { cnplain } % name
   { } % Space above
   { } % Space below
   { \kaishu } % body font
@@ -270,7 +265,7 @@
   { . } % punctuation after theorem head
   { 5pt plus 1pt minus 1pt } % space after theorem head
   { } % theorem head spec (cna be left empty, meaning `normal')
-\newtheoremstyle { chinesedefinition }
+\newtheoremstyle { cndefinition }
   { }
   { }
   { \normalfont }
@@ -279,7 +274,7 @@
   { . }
   { 5pt plus 1pt minus 1pt }
   { }
-\newtheoremstyle { chineseremark }
+\newtheoremstyle { cnremark }
   { }
   { }
   { \normalfont }
@@ -290,7 +285,7 @@
   { }
 
 % 使用方法 \addtheorem[<style>]{<environment name>=<Chinese name>, <environment name>, ...}[<super counter>]
-\NewDocumentCommand \addtheorem { O{chinesedefinition} m O{} }
+\NewDocumentCommand \addtheorem { O{cndefinition} m O{} }
   {
     \keyval_parse:nnn
       { \__scnu_new_english_theorem:nnn  {#1} {#3} }
@@ -341,32 +336,17 @@
   { \__scnu_content_to_wd:nn { 3.2cm } {#1} }
 \cs_new_protected:Npn \__scnu_cover_mid_underline:n #1
   { \__scnu_content_min_wd:nn { 6cm } {#1} }
-% 生成 \__scnu_cover_mid_underline:V
+% 生成 \__scnu_cover_mid_underline:V, \__scnu_content_min_wd:nV
 \cs_generate_variant:Nn \__scnu_cover_mid_underline:n { V }
-
-%带圈数字
-\cs_new_protected:Npn \__scnu_circle_num:n #1 % 参数是计数器名
-  {
-    % 使用pifont包里\ding产生的带圈数字1~10
-    \ding { \int_eval:n { 191 + \use:c { c@#1 } } }
-    % 181是黑底圈，191是白底圈，可根据需要自行修改
-  }
-
-
-\cs_new:Npn \__scnu_group_set:Nn #1#2
-  {
-    \tl_set:Nn #1 { \group_begin: #2 \group_end: }
-  }
+\cs_generate_variant:Nn \__scnu_content_min_wd:nn { nV }
 
 % 原创声明元素
-\cs_new_protected:Npn \__scnu_statement_title:n #1
+\group_cs_new:Npn \__scnu_statement_title:n #1
   {
-    \group_begin:
-      \__scnu_vspace_star:n { 2.4ex }
-      \centering \zihao { 3 } \heiti
-      #1
-      \skip_vertical:N 2.4ex
-    \group_end:
+    \__scnu_vspace_star:n { 2.4ex }
+    \centering \zihao { 3 } \heiti
+    #1
+    \skip_vertical:N 2.4ex
   }
 \cs_new_protected:Npn \__scnu_statement_signature:
   {
@@ -419,6 +399,7 @@
     title   .tl_set:N = \g__scnu_title_en_tl,
     姓名	    .tl_set:N = \g__scnu_name_cn_tl,
     name    .tl_set:N = \g__scnu_name_en_tl,
+    手机号	  .tl_set:N = \g__scnu_phone_tl,
     email   .tl_set:N = \g__scnu_email_tl,
     专业名称	.tl_set:N = \g__scnu_major_cn_tl,
     major   .tl_set:N = \g__scnu_major_en_tl,
@@ -441,12 +422,7 @@
       },
     答辩通过证明 .code:n =
       {
-        \tl_set:Nn \l__scnu_pass_defense_tl { \cleardoublepage }
-         \file_if_exist:nT { fig / #1 }
-          {
-            \tl_put_right:Nn \l__scnu_pass_defense_tl
-              { \includepdf [ pages = -, landscape, fitpaper ] { fig / #1 } }
-          }
+        \tl_set:Nn \l__scnu_passdefense_filename_tl { fig / #1 }
       },
     原创授权声明 .code:n =
       {
@@ -468,7 +444,7 @@
     title   .initial:n = { },
     姓名	    .initial:n = { },
     name    .initial:n = { },
-    签名图	  .initial:n = { \g__scnu_name_cn_tl },
+    手机号	  .initial:n = { },
     email   .initial:n = { },
     专业名称	.initial:n = { },
     major   .initial:n = { },
@@ -478,6 +454,7 @@
     tutor   .initial:n = { },
     导师职称	.initial:n = { },
     date    .initial:n = { \today },
+    签名图	  .initial:n = { \g__scnu_name_cn_tl },
     答辩通过证明 .initial:n = { },
     原创授权声明 .initial:n = { },
   }
@@ -510,10 +487,16 @@
     l
     < { \endCJKfilltwosides }
   }
-
-\__scnu_group_set:Nn \l__scnu_cover_head_tl
+\newcolumntype { C } [ 1 ]
   {
-    \zihao { 4 }
+    p {#1}
+    < { \centering }
+  }
+
+\group_tl_set:Nnn \l__scnu_cover_head_tl
+  { \zihao { 4 } }
+  {
+    \tb_tabular_add_to_cr:n { \cline{2-2} \cline{5-5} }
     \begin { tabularx } { \linewidth }
       {
         s{ 4\ccwd } @{：}
@@ -525,66 +508,60 @@
     分类号 &
     \__scnu_cover_head_underline:N \g__scnu_category_tl &&
     密级 &
-    \__scnu_cover_head_underline:N \g__scnu_secrets_tl \\ \cline{2-2}\cline{5-5}
+    \__scnu_cover_head_underline:N \g__scnu_secrets_tl \\
     学校代码 &
     \__scnu_cover_head_underline:N \g__scnu_udc_tl &&
     学号 &
-    \__scnu_cover_head_underline:N \g__scnu_sno_tl \\ \cline{2-2}\cline{5-5}
+    \__scnu_cover_head_underline:N \g__scnu_sno_tl \\
     \end { tabularx }
   }
-\__scnu_group_set:Nn \l__scnu_cover_school_name_tl
-  {
-    \zihao { 3 } \bfseries \itshape
-    South ~ China ~ Normal ~ University
-  }
-\__scnu_group_set:Nn \l__scnu_cover_degree_type_tl
-  {
-    \zihao{ 1 } \bfseries \ziju { .2 }
-    \g__scnu_degree_tl 学位论文
-  }
-\__scnu_group_set:Nn \l__scnu_cover_master_type_tl
+\group_tl_set:Nnn \l__scnu_cover_school_name_tl
+  { \zihao { 3 } \bfseries \itshape }
+  { South ~ China ~ Normal ~ University }
+\group_tl_set:Nnn \l__scnu_cover_degree_type_tl
+  { \zihao{ 1 } \bfseries \ziju { .2 } }
+  { \g__scnu_degree_tl 学位论文 }
+\group_tl_set:Nnn \l__scnu_cover_master_type_tl
+  { \zihao { -3 } }
   {
     \parbox [ c ] [ 2cm ] [ t ] { 5cm }
       {
         \centering
         \tl_if_eq:NnF \g__scnu_degree_tl { 博士 }
-          {
-            \zihao { -3 }
-            ( \g__scnu_type_tl 学位 )
-          }
+          { ( \g__scnu_type_tl 型学位 ) }
       }
   }
-\__scnu_group_set:Nn \l__scnu_cover_title_tl
+\group_tl_set:Nnn \l__scnu_cover_title_tl
+  { \zihao { -2 } \bfseries }
+  { \parbox { 9cm } { \centering \g__scnu_title_cn_tl } }
+\group_tl_set:Nnn \l__scnu_cover_information_tl
+  { \fangsong \zihao { 4 } }
   {
-    \zihao { -2 } \bfseries
-    \parbox { 9cm } { \centering \g__scnu_title_cn_tl }
-  }
-\__scnu_group_set:Nn \l__scnu_cover_information_tl
-  {
-    \fangsong \zihao { 4 }
+    \tb_tabular_add_to_cr:n
+      {
+        \cline{2-2}
+        \__scnu_cover_noalign_skip:
+      }
     \begin { tabular }
       {
         s{ 7\ccwd } @{：}
         c
       }
       学位申请人 &
-      \__scnu_cover_mid_underline:V \g__scnu_name_cn_tl  \\ \cline{2-2} \__scnu_cover_noalign_skip:
+      \__scnu_cover_mid_underline:V \g__scnu_name_cn_tl  \\
       专业学位名称 &
-      \__scnu_cover_mid_underline:V \g__scnu_major_cn_tl \\ \cline{2-2} \__scnu_cover_noalign_skip:
+      \__scnu_cover_mid_underline:V \g__scnu_major_cn_tl \\
       专业学位领域 &
-      \__scnu_cover_mid_underline:V \g__scnu_field_tl    \\ \cline{2-2} \__scnu_cover_noalign_skip:
+      \__scnu_cover_mid_underline:V \g__scnu_field_tl    \\
       所在院系 &
-      \__scnu_cover_mid_underline:V \g__scnu_college_tl  \\ \cline{2-2} \__scnu_cover_noalign_skip:
+      \__scnu_cover_mid_underline:V \g__scnu_college_tl  \\
       导师姓名及职称 &
       \__scnu_cover_mid_underline:n
-        { \g__scnu_tutor_cn_tl \c_space_tl \g__scnu_tutor_title_tl } \\ \cline{2-2}
+        { \g__scnu_tutor_cn_tl \c_space_tl \g__scnu_tutor_title_tl } \\
     \end { tabular }
   }
-\__scnu_group_set:Nn \l__scnu_cover_date_tl
-  {
-    \fangsong
-    \g__scnu_date_tl
-  }
+\group_tl_set:Nnn \l__scnu_cover_date_tl
+  { \fangsong } { \g__scnu_date_tl }
 
 
 \NewDocumentCommand \makecover { }
@@ -597,19 +574,125 @@
       \l__scnu_cover_degree_type_tl \\[2mm]
       \l__scnu_cover_master_type_tl \\
       \l__scnu_cover_title_tl \\ \vfill
-      \l__scnu_cover_information_tl \\[2cm]
+      \l__scnu_cover_information_tl \\[15mm]
       \l__scnu_cover_date_tl
     \end { center }
   }
 
 
-\NewDocumentCommand \passdefense { }
+
+\NewDocumentEnvironment { fpage } { }
   {
-    \__scnu_edition_if_electronic:T { \l__scnu_pass_defense_tl }
+    \group_begin:
+    \zihao { 3 }
+    \setlength { \tabcolsep } { 1cm }
+    \tb_tabularx_add_to_end:n { \\ \hline }
+
+    \noindent
+    \tabularx { \linewidth } { | X | }
+    \hline
+  }
+  {
+    % \\ \hline
+    \endtabularx
+    \group_end:
+    \par
+  }
+
+\group_tl_set:Nn \l__scnu_passdefense_proof_tl
+  {
+    \__scnu_hspace_star:n { 2\ccwd }
+    学位申请人 \c_space_tl
+    \underline { \__scnu_content_min_wd:nV { 4em } \g__scnu_name_cn_tl }
+    向本学位论文答辩委员会提交题为 \c_space_tl
+    \underline { \__scnu_content_min_wd:nV { 14em } \g__scnu_title_cn_tl }
+    的博士/硕士论文，经答辩委员会审议，本论文答辩合格，特此证明。
+  }
+\group_tl_set:Nn \l__scnu_passdefense_instructor_tl
+  {
+    \__scnu_hspace_star:n { 2\ccwd }
+    论文指导老师：
+    \underline { \__scnu_exp_content_wd:nn { 1cm } { \g__scnu_tutor_cn_tl } }
+  }
+\group_tl_set:Nn \l__scnu_passdefense_signature_tl
+  {
+    \hfill
+    华南师范大学
+    \g__scnu_college_tl
+    （公章）
+  }
+\group_tl_set:Nn \l__scnu_passdefense_date_tl
+  {
+    \hfill
+    \g__scnu_date_tl
+  }
+\group_tl_set:Nnn \l__scnu_passdefense_endnote_text_tl
+  { \zihao { 5 } }
+  { （此页须放在提交版论文封面后第一页，纸质版装订，电子版放入彩色扫描件） }
+\group_tl_set:Nn \l__scnu_passdefense_endnote_tl
+  {
+    \hfill
+    \box_new:N \l__scnu_passdefense_endnote_box
+    \hbox_set:Nn \l__scnu_passdefense_endnote_box
+      { \l__scnu_passdefense_endnote_text_tl }
+    \raisebox
+      { - \box_ht_plus_dp:N \l__scnu_passdefense_endnote_box }
+      {
+        \box_set_ht:Nn \l__scnu_passdefense_endnote_box { 0pt }
+        \box_set_dp:Nn \l__scnu_passdefense_endnote_box { 0pt }
+        \box_use:N \l__scnu_passdefense_endnote_box
+      }
+  }
+\group_cs_new:Npn \__scnu_passdefense_memberlist:n #1
+  {
+    \begin { center }
+    \zihao { -4 }
+    \setlength { \tabcolsep } { 16pt }
+    \renewcommand \arraystretch { 1.5 }
+    \tb_tabular_add_to_cr:n { \hline }
+    \begin { tabular }
+      {
+        | C { 4em }
+        | C { 4em }
+        | C { 8em }
+        | C { 4em } |
+      }
+    \hline
+    #1
+    \end { tabular }
+    \end { center }
+  }
+\cs_new:Npn \__scnu_passdefense_text:n #1
+  {
+    \begin { fpage }
+    \__scnu_statement_title:n {华南师范大学研究生学位论文答辩合格证明}
+    \l__scnu_passdefense_proof_tl \\
+    \__scnu_statement_title:n {博士/硕士学位论文答辩委员会成员名单}
+    \__scnu_passdefense_memberlist:n {#1} \\ \\
+    \l__scnu_passdefense_instructor_tl \\ \\
+    \l__scnu_passdefense_signature_tl \\
+    \l__scnu_passdefense_date_tl \\
+    \end { fpage }
+
+    \l__scnu_passdefense_endnote_tl
   }
 
 
-\NewDocumentCommand \blindinput { m }
+\NewDocumentEnvironment { memberlist } { b }
+  {
+    \cleardoublepage
+    \file_if_exist:nTF { \l__scnu_passdefense_filename_tl }
+      { \includepdf [ pages = -, landscape, fitpaper ] { \l__scnu_passdefense_filename_tl } }
+      { \__scnu_passdefense_text:n {#1} }
+  } { }
+
+
+\NewDocumentCommand \electronicinput { m }
+  {
+    \__scnu_edition_if_electronic:T { \input {#1} }
+  }
+
+\NewDocumentCommand \unblindinput { m }
   {
     \__scnu_edition_if_blindreview:F { \input {#1} }
   }
@@ -623,6 +706,38 @@
     \pagestyle { fancy }
   }
 
+
+\group_tl_set:Nnn \l__scnu_cnabstract_title_tl
+  { \zihao { 3 } \heiti } { \g__scnu_title_cn_tl }
+\group_tl_set:Nnn \l__scnu_cnabstract_information_tl
+  { \songti }
+  {
+    \begin { tabular }
+      {
+        s{ 4\ccwd } @{：}
+        l
+      }
+    专业名称 &
+    \g__scnu_major_cn_tl \\
+    申请者 &
+    \g__scnu_name_cn_tl \\
+    导师 &
+    \g__scnu_tutor_cn_tl \\
+    \end { tabular }
+  }
+\group_tl_set:Nnn \l__scnu_cnabstract_label_tl
+  { \zihao { -3 } \heiti }
+  {
+    \noindent
+    \__scnu_CJK_fill_twosides:nn { 3\ccwd } { 摘要 }
+  }
+\group_tl_set:Nnn \l__scnu_cnkeywords_label_tl
+  { \zihao { 4 } \heiti }
+  {
+    \noindent
+    关键词：
+  }
+
 \NewDocumentEnvironment { cnabstract } { }
   {
     \cleardoublepage
@@ -630,42 +745,50 @@
     \addcontentsline { toc } { chapter } { 摘要 }
     \__scnu_vspace_star:n { 2.4ex }
     \begin { center }
-      \zihao { 3 } \heiti
-      \g__scnu_title_cn_tl
+      \l__scnu_cnabstract_title_tl
       \__scnu_skip_one_line:
-
-      \zihao { -4 } \songti
-      \begin { tabular }
-        {
-          s{ 4\ccwd } @{：}
-          l
-        }
-      专业名称 &
-      \g__scnu_major_cn_tl \\
-      申请者 &
-      \g__scnu_name_cn_tl \\
-      导师 &
-      \g__scnu_tutor_cn_tl \\
-      \end { tabular }
+      \l__scnu_cnabstract_information_tl
     \end { center }
     \skip_vertical:N 3\baselineskip
 
-    \noindent
-    \zihao { -3 } \heiti
-    \__scnu_CJK_fill_twosides:nn { 3\ccwd } { 摘要 }
-    \zihao { -4 } \normalfont
+    \l__scnu_cnabstract_label_tl
     \__scnu_skip_one_line: %\par
   }
   { \__scnu_skip_one_line: }
 
 \NewDocumentCommand \cnkeywords { m }
   {
-    \noindent
-    \zihao { 4 } \heiti
-    关键词：
-    \zihao { -4 } \normalfont
+    \l__scnu_cnkeywords_label_tl
     #1
   }
+
+
+\group_tl_set:Nnn \l__scnu_enabstract_title_tl
+  { \zihao { -3 } \sffamily }
+  {
+    \skip_set:Nn \tabcolsep { 0pt }
+    \begin { tabularx } { \linewidth } { p{2.5em} X p{2.5em} }
+    & \centering \text_uppercase:n { \g__scnu_title_en_tl } &
+    \end { tabularx }
+  }
+\group_tl_set:Nn \l__scnu_enabstract_information_tl
+  {
+    \skip_set:Nn \tabcolsep { 6pt }
+    \begin { tabular } { l l }
+    Major: &
+    \g__scnu_major_en_tl \\
+    Name: &
+    \g__scnu_name_en_tl \\
+    Supervisor: &
+    \g__scnu_tutor_en_tl \\
+    \end { tabular }
+  }
+\group_tl_set:Nnn \l__scnu_enabstract_label_tl
+  { \zihao { 4 } \sffamily }
+  { \noindent ABSTRACT }
+\group_tl_set:Nnn \l__scnu_enkeywords_label_tl
+  { \sffamily }
+  { \noindent KEY ~ WORDS: ~ }
 
 \NewDocumentEnvironment { enabstract } { }
   {
@@ -674,41 +797,20 @@
     \addcontentsline { toc } { chapter } { ABSTRACT }
     \__scnu_vspace_star:n { 2.4ex }
     \begin { center }
-      \zihao { -3 } \sffamily
-      \skip_set:Nn \tabcolsep { 0pt }
-      \begin { tabularx } { \linewidth } { p{2.5em} X p{2.5em} }
-      & \centering \text_uppercase:n \g__scnu_title_en_tl &
-      \end { tabularx }
+      \l__scnu_enabstract_title_tl
       \__scnu_skip_one_line:
-
-      \zihao { -4 } \normalfont
-      \skip_set:Nn \tabcolsep { 6pt }
-      \begin { tabular } { l l }
-      Major: &
-      \g__scnu_major_en_tl \\
-      Name: &
-      \g__scnu_name_en_tl \\
-      Supervisor: &
-      \g__scnu_tutor_en_tl \\
-      \end { tabular }
+      \l__scnu_enabstract_information_tl
     \end { center }
     \skip_vertical:N 3\baselineskip
 
-    \noindent
-    \zihao { 4 } \sffamily
-    ABSTRACT
-
-    \zihao { -4 } \normalfont
+    \l__scnu_enabstract_label_tl
     \__scnu_skip_one_line: %\par
   }
   { \skip_vertical:N 2\baselineskip }
 
 \NewDocumentCommand \enkeywords { m }
   {
-    \noindent
-    \zihao { -4 } \sffamily
-    KEY ~ WORDS: ~
-    \normalfont
+    \l__scnu_enkeywords_label_tl
     #1
   }
 
@@ -724,7 +826,7 @@
     \__scnu_statement_signature:
     \__scnu_skip_one_line:
 
-    \__scnu_statement_title:n { 华南师范大学位论文授权使用声明 }
+    \__scnu_statement_title:n { 华南师范大学位论文使用授权声明 }
     本人完全了解华南师范大学有关保留、使用学位论文的规定，学校有权保留学位论文并向国家主管部门或其指定机构送交论文的电子版和纸质版。有权将学位论文用于非贏利目的的少量复制并允许论文进入学校图书馆被查阅。有权将学位论文的内容编入有关数据库进行检索。有权将学位论文的标题和摘要汇编出版。保密的学位论文在解密后适用本规定。
     \__scnu_skip_one_line:
     \__scnu_statement_signature:
@@ -760,6 +862,8 @@
     \g__scnu_date_tl
     \__scnu_skip_one_line:
 
+    \tb_tabular_add_to_cr:n { \hline }
+
     \noindent
     \begin { tabularx } { \linewidth }
       {
@@ -770,26 +874,29 @@
         *2 { c| }
       }
     \hline
-    论文题目 & \multicolumn { 5 } { c| } { \g__scnu_title_cn_tl } \\ \hline
+    论文题目 & \multicolumn { 5 } { c| } { \g__scnu_title_cn_tl } \\
     研究生学号 & \g__scnu_sno_tl &
     所在院系 & \g__scnu_college_tl &
-    学位年度 & \int_use:N \c_sys_year_int \\ \hline
+    学位年度 & \int_use:N \c_sys_year_int \\
     论文级别 & \multicolumn { 5 } { @{} l @{} | }
       {
-        \begin { tabularx } { .8\linewidth } { X X r }
+        \tb_tabular_add_to_cr:n { }
+        \begin { tabularx }
+          { \dim_eval:n { \linewidth - 2\tabcolsep - 3\arrayrulewidth - 6\ccwd } }
+          { X X r }
         \__scnu_degree_type_checkbox:nn { 硕士 } { 学术 } 硕士 &
         \__scnu_degree_type_checkbox:nn { 硕士 } { 专业 } 专业学位硕士 \\
         \__scnu_degree_type_checkbox:nn { 博士 } { 直博 } 直博(含提前攻博) &
         \__scnu_degree_type_checkbox:nn { 博士 } { 普通 } 普博(含论文博士) \\
         & & (请在方框上画勾)
         \end { tabularx }
-      } \\ \hline
-    作者电话 & \g__scnu_name_cn_tl &
-    作者 Email & \multicolumn { 3 } { c| } { \g__scnu_email_tl } \\ \hline
+      } \\
+    作者电话 & \g__scnu_phone_tl &
+    作者 Email & \multicolumn { 3 } { c| } { \g__scnu_email_tl } \\
     第一导师姓名 & \g__scnu_tutor_cn_tl &
-    导师电话 & \multicolumn { 3 } { c| } { } \\ \hline
+    导师电话 & \multicolumn { 3 } { c| } { } \\
     第二导师姓名 & &
-    导师电话 & \multicolumn { 3 } { c| } { } \\ \hline
+    导师电话 & \multicolumn { 3 } { c| } { } \\
     \end { tabularx }
   }
 
@@ -801,9 +908,11 @@
     \bool_lazy_and:nnTF
       { \tl_if_eq_p:NN \g__scnu_degree_tl \l__scnu_degree_tl }
       { \tl_if_eq_p:NN \g__scnu_type_tl \l__scnu_type_tl }
-      { \group_begin: \large \CheckedBox \group_end: }
+      { \group_use:n { \large \CheckedBox } }
       { \Square }
   }
+
+
 
 \NewDocumentCommand { \NewNoteCommand } { m m m }
   {

@@ -1,0 +1,61 @@
+% !TeX root = ./main.tex
+%% circlenum.sty 2023/02/09 version V1.0  by Sunben Chiu
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{circlenum}{2023/02/09}{v1.0}{Sunben Chiu}
+% 带圈数字
+\RequirePackage { pifont }
+
+\int_new:N \g__circlenum_base_int
+\int_new:N \l__circlenum_counter_int
+\msg_new:nnn { circlenum } { counter-too-large } { Counter ~too ~large. }
+
+\keys_define:nn { circlenum / option }
+  {
+    black .bool_set:N = \g__circlenum_black_bool,
+    black  .default:n = { true },
+    black  .initial:n = { false },
+    rm    .bool_set:N = \g__circlenum_rmfamily_bool,
+    rm     .default:n = { true },
+    rm     .initial:n = { false },
+  }
+\ProcessKeysOptions { circlenum / option }
+
+% 171是白底衬线，181是黑底衬线黑底圈，191是白底非衬线（默认），201是黑底非衬线
+\int_set:Nn \g__circlenum_base_int
+  {
+    \bool_if:NTF \g__circlenum_rmfamily_bool { 171 } { 191 }
+    +
+    \bool_if:NTF \g__circlenum_black_bool { 10 } { 0 }
+  }
+
+% #1: counter name
+\cs_new_protected:Npn \circlenum_printing:n #1 % 参数是计数器名
+  {
+    \int_set:Nn \l__circlenum_counter_int { \use:c { c@#1 } }
+    \int_compare:nTF { 1 <= \l__circlenum_counter_int <= 10 }
+      {
+        \ding
+          {
+            \int_eval:n
+              { \g__circlenum_base_int + \l__circlenum_counter_int }
+          }
+      }
+      { \msg_error:nn { circlenum } { counter-too-large } }
+  }
+\cs_set_eq:NN \circlenum \circlenum_printing:n
+
+
+\endinput
+%%
+%% End of file `circlenum.sty'.
+
+
+% 快速内嵌使用
+\cs_new_protected:Npn \circlenum_printing:n #1 % 参数是计数器名
+  {
+    % 使用pifont包里\ding产生的带圈数字1~10
+    \ding { \int_eval:n { 191 + \use:c { c@#1 } } }
+    % 181是黑底圈，191是白底圈，可根据需要自行修改
+  }
+
