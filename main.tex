@@ -1,7 +1,7 @@
 % !TeX program = xelatex
 \RequirePackage{pdfmanagement-testphase}
 \DeclareDocumentMetadata{uncompress,pdfstandard=A-1b}
-% edition = debug -> blindreview -> electronic -> print
+% edition = debug -> blindreview -> electronic (default) -> print
 \documentclass[edition=electronic]{scnuthesis}
 \usepackage{zhlipsum,lipsum}
 
@@ -27,8 +27,8 @@
   bib文件名 = {ref.bib},
   % 所有图片、扫描件都要放在 ./fig/ 文件夹下
   签名图 = {signature.pdf},
-%  答辩通过证明 = {statement.pdf},
-  原创授权声明 = {statement.pdf},
+  答辩通过证明 = {答辩合格证明.pdf},
+%  原创授权声明 = {statement.jpg},
 }
 
 % 粗体标签、宋体内容样式
@@ -81,8 +81,8 @@
 
 \backmatter
 
-\input{data/resume}
-\input{data/acknowledgement}
+\blindinput{data/resume}
+\blindinput{data/acknowledgement}
 
 \statement
 
