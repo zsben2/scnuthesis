@@ -1,44 +1,39 @@
 % !TeX root = ./main.tex
 %% tblrhook.sty 2023/02/09 version V0.1  by Sunben Chiu
+%% tblrhook.sty 2023/02/10 version V1.0  by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{tblrhook}{2023/02/09}{v0.1}{Sunben Chiu}
+\ProvidesExplPackage{tblrhook}{2023/02/10}{v1.0}{Sunben Chiu}
 
-\prg_new_conditional:Npnn \__tb_array_if_loaded: { T, F, TF }
+\prg_new_conditional:Npnn \__tb_package_if_loaded:n #1 { T, F, TF }
   {
-    \@ifpackageloaded { array }
+    \@ifpackageloaded {#1}
       { \prg_return_true: } { \prg_return_false: }
-  }
-\prg_new_conditional:Npnn \__tb_tabularx_if_loaded: { T, F, TF }
-  {
-    \@ifpackageloaded { array }
-      { \prg_return_true: } { \prg_return_false: }
-  }
-
-\msg_new:nnn { tblrhook } { array-below }
-  { tblrhook ~must ~be ~loaded ~after ~array! }
-\msg_new:nnn { tblrhook } { tabularx-below }
-  { tblrhook ~must ~be ~loaded ~after ~tabularx! }
-
-% tblrhook must be loaded after array and tabularx.
-\AtBeginDocument
-  {
-    \__tb_array_if_loaded:F
-      {
-        \@ifpackageloaded { array }
-          { \msg_error:nn { tblrhook } { array-below } }
-          { }
-      }
-    \__tb_tabularx_if_loaded:F
-      {
-        \@ifpackageloaded { tabularx }
-          { \msg_error:nn { tblrhook } { tabularx-below } }
-          { }
-      }
   }
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% array, tabular, tabularx
+\cs_generate_variant:Nn \prg_new_conditional:Npnn { cpnn }
+\clist_map_inline:nn { array, tabularx }
+  {
+    \prg_new_conditional:cpnn { __tb_ #1 _if_loaded : } { T, F, TF }
+      {
+        \__tb_package_if_loaded:nTF {#1}
+          { \prg_return_true: } { \prg_return_false: }
+      }
+    \msg_new:nnn { tblrhook } { #1-below }
+      { tblrhook ~must ~be ~loaded ~after ~#1! }
+    % tblrhook must be loaded after array and tabularx.
+    \AtBeginDocument
+      {
+        \use:c { __tb_ #1 _if_loaded : F }
+          {
+            \__tb_package_if_loaded:nT {#1}
+              { \msg_error:nn { tblrhook } { #1-below } }
+          }
+      }
+  }
+
 
 % 修改表格中 \\ 的定义
 % 参考自 https://tex.stackexchange.com/a/570114
@@ -70,8 +65,6 @@
 
 \cs_new:Npn \tb_tabular_add_to_cr:n #1
   { \tl_set:Nn \__tb_add_to_cr_tl {#1} }
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% tabularx
 
