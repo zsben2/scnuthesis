@@ -1,17 +1,22 @@
-\documentclass{scnuthesis}
+% !TeX program = xelatex
+\RequirePackage{pdfmanagement-testphase}
+\DeclareDocumentMetadata{uncompress,pdfstandard=A-1b}
+% edition = debug -> blindreview -> electronic -> print
+\documentclass[edition=electronic]{scnuthesis}
 \usepackage{zhlipsum,lipsum}
 
 \scnusetup{
   分类号 = {},
-  UDC = {},
+%  学校代码 = {10574},
   密级 = {公开},
   学号 = {2020020000},
-  学位类型 = {学术型},
-  培养层次 = {硕士},
+  学位类型 = {学术}, % 学术, 专业, 直博, 普通
+  培养层次 = {硕士}, % 硕士, 博士
   题目 = {华南师范大学硕士\ / 博士学位论文\LaTeX3模板使用手册},
   title = {How to use the \LaTeX3 Document Class for SCNU Dissertations},
   姓名 = {张三},
   name = {Zhang San},
+  email = {123456789@qq.com},
   专业名称 = {基础数学},
   major = {Basic mathematics},
   研究方向 = {不定方程与超越数论},
@@ -20,27 +25,54 @@
   tutor = {Li Si},
   导师职称 = {教授},
   bib文件名 = {ref.bib},
+  % 所有图片、扫描件都要放在 ./fig/ 文件夹下
+  签名图 = {signature.pdf},
+%  答辩通过证明 = {statement.pdf},
+  原创授权声明 = {statement.pdf},
 }
+
+% 粗体标签、宋体内容样式
+\addtheorem[chinesedefinition]{
+  definition = 定义,
+  assume     = 假设,
+  lemma      = 引理,
+  question   = 问题,
+}[chapter]
+% 粗体标签、楷体内容样式
+\addtheorem[chineseplain]{
+  exercise    = 练习,
+  example     = 例,
+  theorem     = 定理,
+  proposition = 命题,
+  corollary   = 推论,
+  conjecture  = 猜想,
+}[chapter]
+% 楷体标签、宋体内容样式
+\addtheorem[chineseremark]{
+  remark = 注,
+}[chapter]
 
 
 \begin{document}
 
 \makecover
 
+\passdefense
+
 \frontmatter
 
 \input{data/abstract}
 
 \tableofcontents
-\listoftables
-\listoffigures
+% \listoftables
+% \listoffigures
 
 \mainmatter
 
 \input{data/ch01}
 \input{data/ch02}
 
-\printbibliography
+\printbibliography[heading=bibintoc]
 
 \appendix
 
@@ -49,8 +81,8 @@
 
 \backmatter
 
-\input{data/acknowledgement}
 \input{data/resume}
+\input{data/acknowledgement}
 
 \statement
 
