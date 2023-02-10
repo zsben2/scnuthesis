@@ -2,10 +2,11 @@
 % !TeX program = xelatex
 %% scnuthesis.cls 2020/09/26 version V0.1  by Sunben Chiu
 %% scnuthesis.cls 2022/12/26 version V0.2  by Sunben Chiu
+%% scnuthesis.cls 2023/02/05 version V0.3  by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2022/12/26}{v0.2}{Sunben Chiu}
+\ProvidesExplClass{scnuthesis}{2022/02/05}{v0.3}{Sunben Chiu}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
 \cs_new:Npn \__scnu_msg_error:nn { \msg_error:nnn { scnuthesis } }
@@ -132,9 +133,9 @@
     % tocline    = \heiti\zihao{4}\CTEXnumberline{#1}#2,
   },
   subsubsection = {
-    format     = \zihao{-4},
+    format     = \heiti\zihao{-4},
     beforeskip = 1ex plus .2ex minus .2ex,
-    afterskip  = 0ex plus .2ex,
+    afterskip  = 1ex plus .2ex,
   },
 }
 
@@ -148,7 +149,7 @@
       {
         colorlinks,
         linkcolor = red,
-        citecolor = green!70!black,
+        citecolor = green,
         urlcolor = blue
       }
   }
@@ -440,10 +441,10 @@
       },
     答辩通过证明 .code:n =
       {
-        \tl_set:Nn \passdefense { \cleardoublepage }
+        \tl_set:Nn \l__scnu_pass_defense_tl { \cleardoublepage }
          \file_if_exist:nT { fig / #1 }
           {
-            \tl_put_right:Nn \passdefense
+            \tl_put_right:Nn \l__scnu_pass_defense_tl
               { \includepdf [ pages = -, landscape, fitpaper ] { fig / #1 } }
           }
       },
@@ -599,6 +600,12 @@
       \l__scnu_cover_information_tl \\[2cm]
       \l__scnu_cover_date_tl
     \end { center }
+  }
+
+
+\NewDocumentCommand \passdefense { }
+  {
+    \__scnu_edition_if_electronic:T { \l__scnu_pass_defense_tl }
   }
 
 
