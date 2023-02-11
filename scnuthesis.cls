@@ -1,14 +1,19 @@
 % !TeX root = ./main.tex
 % !TeX program = xelatex
-%% scnuthesis.cls 2020/09/26 version V0.1  by Sunben Chiu
-%% scnuthesis.cls 2022/12/26 version V0.2  by Sunben Chiu
-%% scnuthesis.cls 2023/02/05 version V0.3  by Sunben Chiu
-%% scnuthesis.cls 2023/02/10 version V0.4  by Sunben Chiu
+%%
+%% This is file `scnuthesis.cls',
+%% Template download from https://github.com/zsben2/scnuthesis
+%% scnuthesis.cls 2020/09/26 version v0.1 created by Sunben Chiu
+%% scnuthesis.cls 2022/12/26 version v0.2 created by Sunben Chiu
+%% scnuthesis.cls 2023/02/05 version v0.3 created by Sunben Chiu
+%% scnuthesis.cls 2023/02/10 version v0.4 created by Sunben Chiu
+%% scnuthesis.cls 2023/02/11 version v0.5 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023/02/10}{v0.4}{Sunben Chiu}
+\ProvidesExplClass{scnuthesis}{2023-02-11}{0.5}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
+\tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
 \cs_new:Npn \__scnu_msg_error:nn { \msg_error:nnn { scnuthesis } }
 \cs_generate_variant:Nn \str_range_ignore_spaces:nnn { Vnn }
@@ -53,9 +58,6 @@
   }
 \ProcessKeysOptions { scnu / option }
 
-
-
-
 \prg_new_conditional:Npnn \__scnu_edition_if_in:n #1 { T, F, TF }
   {
     \clist_if_in:nVTF {#1} \g__scnu_edition_tl
@@ -69,8 +71,6 @@
           { \prg_return_true: } { \prg_return_false: }
       }
   }
-
-
 
 \__scnu_edition_if_print:TF
   {
@@ -248,9 +248,6 @@
 % 修改证明标签的字体样式
 % 参考自 https://tex.stackexchange.com/a/44114
 \xpatchcmd { \proof } { \itshape } { \kaishu } { } { }
-
-
-
 
 
 % 定理环境统一设置
@@ -602,22 +599,22 @@
 \group_tl_set:Nn \l__scnu_passdefense_proof_tl
   {
     \__scnu_hspace_star:n { 2\ccwd }
-    学位申请人 \c_space_tl
-    \underline { \__scnu_content_min_wd:nV { 4em } \g__scnu_name_cn_tl }
-    向本学位论文答辩委员会提交题为 \c_space_tl
-    \underline { \__scnu_content_min_wd:nV { 14em } \g__scnu_title_cn_tl }
+    学位申请人
+    \CJKunderline { \__scnu_content_min_wd:nV { 4em } \g__scnu_name_cn_tl }
+    向本学位论文答辩委员会提交题为
+    \CJKunderline { \__scnu_content_min_wd:nV { 15em } \g__scnu_title_cn_tl }
     的博士/硕士论文，经答辩委员会审议，本论文答辩合格，特此证明。
   }
 \group_tl_set:Nn \l__scnu_passdefense_instructor_tl
   {
     \__scnu_hspace_star:n { 2\ccwd }
     论文指导老师：
-    \underline { \__scnu_exp_content_wd:nn { 1cm } { \g__scnu_tutor_cn_tl } }
+    \CJKunderline { \__scnu_exp_content_wd:nn { 1cm } { \g__scnu_tutor_cn_tl } }
   }
 \group_tl_set:Nn \l__scnu_passdefense_signature_tl
   {
     \hfill
-    华南师范大学
+    \c__scnu_name_tl
     \g__scnu_college_tl
     （公章）
   }
@@ -665,9 +662,9 @@
 \cs_new:Npn \__scnu_passdefense_text:n #1
   {
     \begin { fpage }
-    \__scnu_statement_title:n {华南师范大学研究生学位论文答辩合格证明}
+    \__scnu_statement_title:n { \c__scnu_name_tl 研究生学位论文答辩合格证明 }
     \l__scnu_passdefense_proof_tl \\
-    \__scnu_statement_title:n {博士/硕士学位论文答辩委员会成员名单}
+    \__scnu_statement_title:n { 博士 / 硕士学位论文答辩委员会成员名单 }
     \__scnu_passdefense_memberlist:n {#1} \\ \\
     \l__scnu_passdefense_instructor_tl \\ \\
     \l__scnu_passdefense_signature_tl \\
@@ -818,7 +815,7 @@
 
 \tl_set:Nn \l__scnu_statement_text_tl
   {
-    \__scnu_statement_title:n { 华南师范大学位论文原创性声明 }
+    \__scnu_statement_title:n { \c__scnu_name_tl 学位论文原创性声明 }
     本人郑重声明：所呈交的学位论文，是本人在导师的指导下，独立进行研究工作所取得的成果。除文中己经注明引用的内容外，本论文不含任何其他个人或集体己经发表或撰写过的作品成果。对本文的研究做出重要贡献的个人和集体，均已在文中以明确方式标明。
     \par
     本人完全意识到本声明的法律结果由本人承担。
@@ -826,8 +823,8 @@
     \__scnu_statement_signature:
     \__scnu_skip_one_line:
 
-    \__scnu_statement_title:n { 华南师范大学位论文使用授权声明 }
-    本人完全了解华南师范大学有关保留、使用学位论文的规定，学校有权保留学位论文并向国家主管部门或其指定机构送交论文的电子版和纸质版。有权将学位论文用于非贏利目的的少量复制并允许论文进入学校图书馆被查阅。有权将学位论文的内容编入有关数据库进行检索。有权将学位论文的标题和摘要汇编出版。保密的学位论文在解密后适用本规定。
+    \__scnu_statement_title:n { \c__scnu_name_tl 学位论文使用授权声明 }
+    本人完全了解 \c__scnu_name_tl 有关保留、使用学位论文的规定，学校有权保留学位论文并向国家主管部门或其指定机构送交论文的电子版和纸质版。有权将学位论文用于非贏利目的的少量复制并允许论文进入学校图书馆被查阅。有权将学位论文的内容编入有关数据库进行检索。有权将学位论文的标题和摘要汇编出版。保密的学位论文在解密后适用本规定。
     \__scnu_skip_one_line:
     \__scnu_statement_signature:
   }
@@ -849,16 +846,13 @@
     \__scnu_skip_one_line:
 
     \hfill 作者签名：
-    \underline
+    \CJKunderline
       {
-        \__scnu_edition_if_in:nT { print, blindreview } { \hphantom }%幻影
+        \__scnu_edition_if_in:nT { print, blindreview } { \hphantom } % 幻影
         { \__scnu_expwd_one_em:N \g__scnu_signature_tl }
       }
     \par
     \hfill
-    % \underline { \__scnu_expwd_one_ex:n { \int_use:N \c_sys_year_int  } } 年
-    % \underline { \__scnu_expwd_one_ex:n { \int_use:N \c_sys_month_int } } 月
-    % \underline { \__scnu_expwd_one_ex:n { \int_use:N \c_sys_day_int   } } 日
     \g__scnu_date_tl
     \__scnu_skip_one_line:
 
