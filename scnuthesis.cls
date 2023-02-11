@@ -8,10 +8,12 @@
 %% scnuthesis.cls 2023/02/05 version v0.3 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/10 version v0.4 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/11 version v0.5 created by Sunben Chiu
+%% scnuthesis.cls 2023/02/11 version v0.6 created by Sunben Chiu
+%% scnuthesis.cls 2023/02/11 version v0.7 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023-02-11}{0.5}{Typesetting thesis for South China Normal University}
+\ProvidesExplClass{scnuthesis}{2023-02-11}{0.7}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
@@ -162,7 +164,7 @@
     wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp,
   }
 % 自定义宏包
-\clist_map_inline:nn { l3group, tblrhook, circlenum }
+\clist_map_inline:nn { l3group, tblrhook, circlenum, mainframe }
   { \RequirePackage { tools / #1 } }
 \cs_undefine:N \Bbbk
 \RequirePackage { mtpro2 }
@@ -340,6 +342,7 @@
 % 原创声明元素
 \group_cs_new:Npn \__scnu_statement_title:n #1
   {
+    \par
     \__scnu_vspace_star:n { 2.4ex }
     \centering \zihao { 3 } \heiti
     #1
@@ -593,7 +596,6 @@
 
 \group_tl_set:Nn \l__scnu_passdefense_proof_tl
   {
-    \__scnu_hspace_star:n { 2\ccwd }
     学位申请人
     \CJKunderline { \__scnu_content_min_wd:nV { 4em } \g__scnu_name_cn_tl }
     向本学位论文答辩委员会提交题为
@@ -602,9 +604,8 @@
   }
 \group_tl_set:Nn \l__scnu_passdefense_instructor_tl
   {
-    \__scnu_hspace_star:n { 2\ccwd }
     论文指导老师：
-    \CJKunderline { \__scnu_exp_content_wd:nn { 1cm } { \g__scnu_tutor_cn_tl } }
+    \CJKunderline { \__scnu_content_min_wd:nV { 7em } \g__scnu_tutor_cn_tl }
   }
 \group_tl_set:Nn \l__scnu_passdefense_signature_tl
   {
@@ -617,23 +618,6 @@
   {
     \hfill
     \g__scnu_date_tl
-  }
-\group_tl_set:Nnn \l__scnu_passdefense_endnote_text_tl
-  { \zihao { 5 } }
-  { （此页须放在提交版论文封面后第一页，纸质版装订，电子版放入彩色扫描件） }
-\group_tl_set:Nn \l__scnu_passdefense_endnote_tl
-  {
-    \hfill
-    \box_new:N \l__scnu_passdefense_endnote_box
-    \hbox_set:Nn \l__scnu_passdefense_endnote_box
-      { \l__scnu_passdefense_endnote_text_tl }
-    \raisebox
-      { - \box_ht_plus_dp:N \l__scnu_passdefense_endnote_box }
-      {
-        \box_set_ht:Nn \l__scnu_passdefense_endnote_box { 0pt }
-        \box_set_dp:Nn \l__scnu_passdefense_endnote_box { 0pt }
-        \box_use:N \l__scnu_passdefense_endnote_box
-      }
   }
 \group_cs_new:Npn \__scnu_passdefense_memberlist:n #1
   {
@@ -654,19 +638,24 @@
     \end { tabular }
     \end { center }
   }
-\cs_new:Npn \__scnu_passdefense_text:n #1
+\group_cs_new:Npn \__scnu_passdefense_text:n #1
   {
-    \begin { fpage }
+    \begin { mfpage }
+    \zihao { 3 }
+    \dim_set:Nn \leftskip { 1cm } % 左版心缩进
+    \dim_set_eq:NN \rightskip \leftskip % 右版心缩进
     \__scnu_statement_title:n { \c__scnu_name_tl 研究生学位论文答辩合格证明 }
-    \l__scnu_passdefense_proof_tl \\
+    \l__scnu_passdefense_proof_tl
     \__scnu_statement_title:n { 博士 / 硕士学位论文答辩委员会成员名单 }
-    \__scnu_passdefense_memberlist:n {#1} \\ \\
-    \l__scnu_passdefense_instructor_tl \\ \\
-    \l__scnu_passdefense_signature_tl \\
-    \l__scnu_passdefense_date_tl \\
-    \end { fpage }
-
-    \l__scnu_passdefense_endnote_tl
+    \__scnu_passdefense_memberlist:n {#1}
+    \__scnu_skip_one_line:
+    \l__scnu_passdefense_instructor_tl
+    \vfill
+    \l__scnu_passdefense_signature_tl
+    \par
+    \l__scnu_passdefense_date_tl
+    \__scnu_skip_one_line:
+    \end { mfpage }
   }
 
 
@@ -681,7 +670,7 @@
 
 \NewDocumentCommand \electronicinput { m }
   {
-    \__scnu_edition_if_electronic:T { \input {#1} }
+    \__scnu_edition_if_in:nT { debug, electronic } { \input {#1} }
   }
 
 \NewDocumentCommand \unblindinput { m }
