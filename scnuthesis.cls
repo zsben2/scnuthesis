@@ -154,7 +154,7 @@
         urlcolor = blue
       }
   }
-\ctex_hypersetup:n { bookmarksnumbered }
+\ctex_hypersetup:n { bookmarksnumbered, pdfdisplaydoctitle }
 \RequirePackage
   {
     mathtools, amsthm, amssymb, tabularx, booktabs, pdfpages,
@@ -469,11 +469,6 @@
         \tl_gclear:N \g__scnu_tutor_en_tl
         \tl_gclear:N \g__scnu_tutor_title_tl
       }
-    \hypersetup
-      {
-        pdftitle  = { \g__scnu_title_cn_tl },
-        pdfauthor = { \g__scnu_name_cn_tl },
-      }
   }
 
 
@@ -703,6 +698,44 @@
     \pagestyle { fancy }
   }
 
+\appto \mainmatter
+  {
+    \hypersetup
+      {
+        pdftitle      = { \g__scnu_title_cn_tl },
+        pdfauthor     = { \g__scnu_name_cn_tl },
+        pdfkeywords   = { \seq_use:Nn \g__scnu_keywords_cn_seq { ;~ } },
+        pdfsubject    = { \g__scnu_field_tl },
+        pdflicenseurl = { https://github.com/zsben2/scnuthesis },
+        pdfcreator    =
+          {
+            LaTeX~ with~ scnuthesis~
+            \use:c { ver@scnuthesis.cls } ~
+            and~ hyperref~
+            \use:c { ver@hyperref.sty }
+          },
+        pdfinfo       = {
+          分类号	      = { \g__scnu_category_tl },
+          学校代码	    = { \g__scnu_udc_tl },
+          密级	        = { \g__scnu_secrets_tl },
+          学号	        = { \g__scnu_sno_tl },
+          培养层次	    = { \g__scnu_degree_tl },
+          题目	        = { \g__scnu_title_cn_tl },
+          title       = { \g__scnu_title_en_tl },
+          姓名	        = { \g__scnu_name_cn_tl },
+          author      = { \g__scnu_name_en_tl },
+          email       = { \g__scnu_email_tl },
+          专业名称	    = { \g__scnu_major_cn_tl },
+          major       = { \g__scnu_major_en_tl },
+          研究方向	    = { \g__scnu_field_tl },
+          学院	        = { \g__scnu_college_tl },
+          学校	        = { \c__scnu_name_tl },
+          导师	        = { \g__scnu_tutor_cn_tl },
+          tutor       = { \g__scnu_tutor_en_tl },
+          文章定版日期	= { \g__scnu_date_tl },
+        }
+      }
+  }
 
 \group_tl_set:Nnn \l__scnu_cnabstract_title_tl
   { \zihao { 3 } \heiti } { \g__scnu_title_cn_tl }
@@ -753,10 +786,13 @@
   }
   { \__scnu_skip_one_line: }
 
-\NewDocumentCommand \cnkeywords { m }
+
+\seq_new:N \g__scnu_keywords_cn_seq
+\NewDocumentCommand \cnkeywords { O{；} m }
   {
+    \seq_gset_from_clist:Nn \g__scnu_keywords_cn_seq {#2}
     \l__scnu_cnkeywords_label_tl
-    #1
+    \seq_use:Nn \g__scnu_keywords_cn_seq {#1}
   }
 
 
