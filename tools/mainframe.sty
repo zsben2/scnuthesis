@@ -1,8 +1,9 @@
 % !TeX root = ./demo.tex
 %% mainframe.sty 2023/02/11 version V0.1  by Sunben Chiu
 %% mainframe.sty 2023/02/12 version V0.2  by Sunben Chiu
+%% mainframe.sty 2023/02/12 version V0.3  by Sunben Chiu
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{mainframe}{2023-02-12}{0.2}{Sunben Chiu}
+\ProvidesExplPackage{mainframe}{2023-02-12}{0.3}{Sunben Chiu}
 \RequirePackage { tikzpagenodes, atbegshi }
 
 \dim_new:N \l__mf_left_shift_set_dim
@@ -54,6 +55,7 @@
 \cs_generate_variant:Nn \keys_define:nn { nx }
 \keys_define:nn { mainframe }
   {
+    style   .clist_set:N = \l__mf_tikz_style_clist,
     linewidth .dim_set:N = \l__mf_line_width_dim,
     color      .tl_set:N = \l__mf_color_tl,
     linewidth .initial:n = { 0.4pt },
@@ -72,12 +74,13 @@
 
 \cs_new:Npn \__mf_clear_setting:
   {
-    \dim_zero:N \l__mf_left_shift_set_dim
-    \dim_zero:N \l__mf_right_shift_set_dim
-    \dim_zero:N \l__mf_top_shift_set_dim
-    \dim_zero:N \l__mf_bottom_shift_set_dim
-    \dim_set:Nn \l__mf_line_width_dim { 0.4pt }
-    \tl_set:Nn  \l__mf_color_tl       { black }
+    \dim_zero:N    \l__mf_left_shift_set_dim
+    \dim_zero:N    \l__mf_right_shift_set_dim
+    \dim_zero:N    \l__mf_top_shift_set_dim
+    \dim_zero:N    \l__mf_bottom_shift_set_dim
+    \clist_clear:N \l__mf_tikz_style_clist
+    \dim_set:Nn    \l__mf_line_width_dim { 0.4pt }
+    \tl_set:Nn     \l__mf_color_tl       { black }
   }
 \NewDocumentCommand { \mfsetup } { s m }
   {
@@ -88,51 +91,59 @@
 % 参考自 https://tex.stackexchange.com/a/449294
 \tl_set:Nn \l__mf_textframe_tl
   {
-    \tikz [ remember~ picture, overlay ]
-      \draw
-        [
-          line~ width = \l__mf_line_width_dim,
-          color = \l__mf_color_tl
-        ] % 需要向外偏移一定距离
-          (
+    \use:x
+      {
+        \exp_not:N \tikz [ remember~ picture, overlay ]
+          \exp_not:N \draw
             [
-              xshift = - \l__mf_left_shift_dim,   % 左偏移
-              yshift = - \l__mf_bottom_shift_dim, % 下偏移
-            ]
-            current~ page~ text~ area . south~ west % 左下
-          )
-          rectangle
-          (
-            [
-              xshift = \l__mf_right_shift_dim, % 右偏移
-              yshift = \l__mf_top_shift_dim,   % 上偏移
-            ]
-            current~ page~ text~ area . north~ east % 右上
-          ) ;
+              line~ width = \exp_not:N \l__mf_line_width_dim,
+              color = \exp_not:N \l__mf_color_tl,
+              \l__mf_tikz_style_clist
+            ] % 需要向外偏离一定距离
+            (
+              [
+                xshift = - \exp_not:N \l__mf_left_shift_dim,   % 左偏移
+                yshift = - \exp_not:N \l__mf_bottom_shift_dim, % 下偏移
+              ]
+              current~ page~ text~ area . south~ west % 左下
+            )
+            rectangle
+            (
+              [
+                xshift = \exp_not:N \l__mf_right_shift_dim, % 右偏移
+                yshift = \exp_not:N \l__mf_top_shift_dim,   % 上偏移
+              ]
+              current~ page~ text~ area . north~ east % 右上
+            ) ;
+      }
   }
 \tl_set:Nn \l__mf_paperframe_tl
   {
-    \tikz [ remember~ picture, overlay ]
-      \draw
-        [
-          line~ width = \l__mf_line_width_dim,
-          color = \l__mf_color_tl
-        ] % 需要向内偏移一定距离
-        (
-          [
-            xshift = \l__mf_left_shift_dim,   % 左偏移
-            yshift = \l__mf_bottom_shift_dim, % 下偏移
-          ]
-          current~ page . south~ west % 左下
-        )
-        rectangle
-        (
-          [
-            xshift = - \l__mf_right_shift_dim, % 右偏移
-            yshift = - \l__mf_top_shift_dim,   % 上偏移
-          ]
-          current~ page . north~ east % 右上
-        ) ;
+    \use:x
+      {
+        \exp_not:N \tikz [ remember~ picture, overlay ]
+          \exp_not:N \draw
+            [
+              line~ width = \exp_not:N \l__mf_line_width_dim,
+              color = \exp_not:N \l__mf_color_tl,
+              \l__mf_tikz_style_clist
+            ] % 需要向内偏离一定距离
+            (
+              [
+                xshift = \exp_not:N \l__mf_left_shift_dim,   % 左偏移
+                yshift = \exp_not:N \l__mf_bottom_shift_dim, % 下偏移
+              ]
+              current~ page . south~ west % 左下
+            )
+            rectangle
+            (
+              [
+                xshift = - \exp_not:N \l__mf_right_shift_dim, % 右偏移
+                yshift = - \exp_not:N \l__mf_top_shift_dim,   % 上偏移
+              ]
+              current~ page . north~ east % 右上
+            ) ;
+      }
   }
 
 % 宏包选项
