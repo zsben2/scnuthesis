@@ -1,7 +1,9 @@
 % !TeX root = ./demo.tex
+%% mainframe.sty 2023/02/11 version V0.1  by Sunben Chiu
 %% mainframe.sty 2023/02/12 version V0.2  by Sunben Chiu
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage{mainframe}{2023-02-12}{0.2}{Sunben Chiu}
+\RequirePackage { tikzpagenodes, atbegshi }
 
 \dim_new:N \l__mf_left_shift_set_dim
 \dim_new:N \l__mf_left_shift_dim
@@ -13,38 +15,23 @@
 \dim_new:N \l__mf_bottom_shift_dim
 \tl_new:N  \l__mf_frame_tl
 
-\RequirePackage { tikzpagenodes, atbegshi }
-
-\cs_new:Npn \__mf_xshift_set:n #1
+\clist_map_inline:nn { set, add }
   {
-    \dim_set:Nn \l__mf_left_shift_set_dim   {#1}
-    \dim_set:Nn \l__mf_right_shift_set_dim  {#1}
-  }
-\cs_new:Npn \__mf_yshift_set:n #1
-  {
-    \dim_set:Nn \l__mf_top_shift_set_dim    {#1}
-    \dim_set:Nn \l__mf_bottom_shift_set_dim {#1}
-  }
-\cs_new:Npn \__mf_shift_set:n #1
-  {
-    \__mf_xshift_set:n {#1}
-    \__mf_yshift_set:n {#1}
-  }
-
-\cs_new:Npn \__mf_xshift_add:n #1
-  {
-    \dim_add:Nn \l__mf_left_shift_set_dim   {#1}
-    \dim_add:Nn \l__mf_right_shift_set_dim  {#1}
-  }
-\cs_new:Npn \__mf_yshift_add:n #1
-  {
-    \dim_add:Nn \l__mf_top_shift_set_dim    {#1}
-    \dim_add:Nn \l__mf_bottom_shift_set_dim {#1}
-  }
-\cs_new:Npn \__mf_shift_add:n #1
-  {
-    \__mf_xshift_add:n {#1}
-    \__mf_yshift_add:n {#1}
+    \cs_new:cpn { __mf_xshift_ #1 : n } ##1
+      {
+        \use:c { dim_ #1 : Nn } \l__mf_left_shift_set_dim   {##1}
+        \use:c { dim_ #1 : Nn } \l__mf_right_shift_set_dim  {##1}
+      }
+    \cs_new:cpn { __mf_yshift_ #1 : n } ##1
+      {
+        \use:c { dim_ #1 : Nn } \l__mf_top_shift_set_dim    {##1}
+        \use:c { dim_ #1 : Nn } \l__mf_bottom_shift_set_dim {##1}
+      }
+    \cs_new:cpn { __mf_shift_ #1 : n } ##1
+      {
+        \use:c { __mf_xshift_ #1 : n } {##1}
+        \use:c { __mf_yshift_ #1 : n } {##1}
+      }
   }
 
 \cs_new:Npn \__mf_plus_key_aux_lrtb:n #1
@@ -106,7 +93,7 @@
         [
           line~ width = \l__mf_line_width_dim,
           color = \l__mf_color_tl
-        ] % 需要向外偏离一定距离
+        ] % 需要向外偏移一定距离
           (
             [
               xshift = - \l__mf_left_shift_dim,   % 左偏移
@@ -130,7 +117,7 @@
         [
           line~ width = \l__mf_line_width_dim,
           color = \l__mf_color_tl
-        ] % 需要向内偏离一定距离
+        ] % 需要向内偏移一定距离
         (
           [
             xshift = \l__mf_left_shift_dim,   % 左偏移
