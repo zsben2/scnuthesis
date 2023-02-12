@@ -42,7 +42,7 @@
 \cs_new_protected:Npn \__tb_tabular_cr:Nnn #1#2#3
   {
     % \message{new_line} % before or
-    \use:x { \exp_not:N #1 \IfValueT {#2} { * } \IfValueT {#3} { [#3] } }
+    \use:x { \exp_not:N #1 \IfBooleanT {#2} { * } \tl_if_blank:nF {#3} { [#3] } }
     \noalign { \message { <<<< new_line >>>> } } % after in \noalign
     %
     % \message{new_line} % this breaks \multicolumn
@@ -53,11 +53,11 @@
     \__tb_array_if_loaded:F
       {
         \cs_set_eq:NN \__tb_tabular_cr:ww \@tabularcr
-        \RenewDocumentCommand \@tabularcr { s o }
+        \RenewDocumentCommand \@tabularcr { s O{} }
           { \__tb_tabular_cr:Nnn \__tb_tabular_cr:ww {##1} {##2} #1 }
       }
     \cs_set_eq:NN \__tb_array_cr:ww \@arraycr
-    \RenewDocumentCommand \@arraycr { s o }
+    \RenewDocumentCommand \@arraycr { s O{} }
       { \__tb_tabular_cr:Nnn \__tb_array_cr:ww {##1} {##2} #1 }
   }
 \tl_new:N \__tb_add_to_cr_tl
