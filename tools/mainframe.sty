@@ -1,37 +1,186 @@
 % !TeX root = ./demo.tex
 %% mainframe.sty 2023/02/11 version V0.1  by Sunben Chiu
-
+%% mainframe.sty 2023/02/12 version V0.2  by Sunben Chiu
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{mainframe}{2023-02-11}{0.1}{Sunben Chiu}
-
+\ProvidesExplPackage{mainframe}{2023-02-12}{0.2}{Sunben Chiu}
 \RequirePackage { tikzpagenodes, atbegshi }
 
+\dim_new:N \l__mf_left_shift_set_dim
+\dim_new:N \l__mf_left_shift_dim
+\dim_new:N \l__mf_right_shift_set_dim
+\dim_new:N \l__mf_right_shift_dim
+\dim_new:N \l__mf_top_shift_set_dim
+\dim_new:N \l__mf_top_shift_dim
+\dim_new:N \l__mf_bottom_shift_set_dim
+\dim_new:N \l__mf_bottom_shift_dim
+\tl_new:N  \l__mf_frame_tl
+
+\clist_map_inline:nn { set, add }
+  {
+    \cs_new:cpn { __mf_xshift_ #1 : n } ##1
+      {
+        \use:c { dim_ #1 : Nn } \l__mf_left_shift_set_dim   {##1}
+        \use:c { dim_ #1 : Nn } \l__mf_right_shift_set_dim  {##1}
+      }
+    \cs_new:cpn { __mf_yshift_ #1 : n } ##1
+      {
+        \use:c { dim_ #1 : Nn } \l__mf_top_shift_set_dim    {##1}
+        \use:c { dim_ #1 : Nn } \l__mf_bottom_shift_set_dim {##1}
+      }
+    \cs_new:cpn { __mf_shift_ #1 : n } ##1
+      {
+        \use:c { __mf_xshift_ #1 : n } {##1}
+        \use:c { __mf_yshift_ #1 : n } {##1}
+      }
+  }
+
+\cs_new:Npn \__mf_plus_key_aux_lrtb:n #1
+  {
+    % #1  .dim_set:N = \exp_not:c { l__mf_ #1 _shift_set_dim }, % 毋须预定义变量
+    #1  .dim_set:c = { l__mf_ #1 _shift_set_dim }, % 需要预定义变量
+    #1  .initial:n = { 0pt },
+    #1   + .code:n = { \dim_add:cn { l__mf_ #1 _shift_set_dim } {####1} },
+    #1 ~ + .code:n = { \dim_add:cn { l__mf_ #1 _shift_set_dim } {####1} }
+  }
+\cs_new:Npn \__mf_plus_key_aux_shift:n #1
+  {
+    #1     .code:n = { \__mf_shift_set:nnn { set } {#1} {####1} },
+    #1 ~ + .code:n = { \__mf_shift_set:nnn { add } {#1} {####1} },
+    #1   + .code:n = { \__mf_shift_set:nnn { add } {#1} {####1} }
+  }
+\cs_new:Npn \__mf_shift_set:nnn #1#2#3 { \use:c { __mf_ #2 _ #1 : n } {#3} }
+
+% 用户接口选项
+\cs_generate_variant:Nn \keys_define:nn { nx }
+\keys_define:nn { mainframe }
+  {
+    linewidth .dim_set:N = \l__mf_line_width_dim,
+    color      .tl_set:N = \l__mf_color_tl,
+    linewidth .initial:n = { 0.4pt },
+    color     .initial:n = { black },
+  }
+\keys_define:nx { mainframe }
+  {
+    \__mf_plus_key_aux_lrtb:n  { left   },
+    \__mf_plus_key_aux_lrtb:n  { right  },
+    \__mf_plus_key_aux_lrtb:n  { top    },
+    \__mf_plus_key_aux_lrtb:n  { bottom },
+    \__mf_plus_key_aux_shift:n { shift  },
+    \__mf_plus_key_aux_shift:n { xshift },
+    \__mf_plus_key_aux_shift:n { yshift },
+  }
+
+\cs_new:Npn \__mf_clear_setting:
+  {
+    \dim_zero:N \l__mf_left_shift_set_dim
+    \dim_zero:N \l__mf_right_shift_set_dim
+    \dim_zero:N \l__mf_top_shift_set_dim
+    \dim_zero:N \l__mf_bottom_shift_set_dim
+    \dim_set:Nn \l__mf_line_width_dim { 0.4pt }
+    \tl_set:Nn  \l__mf_color_tl       { black }
+  }
+\NewDocumentCommand { \mfsetup } { s m }
+  {
+    \IfBooleanT {#1} { \__mf_clear_setting: }
+    \keys_set:nn { mainframe } {#2}
+  }
+
 % 参考自 https://tex.stackexchange.com/a/449294
-\tl_set:Nn \g__mf_main_frame_tl
+\tl_set:Nn \l__mf_textframe_tl
   {
     \tikz [ remember~ picture, overlay ]
       \draw
-        ( current~ page~ text~ area . south~ west )
+        [
+          line~ width = \l__mf_line_width_dim,
+          color = \l__mf_color_tl
+        ] % 需要向外偏移一定距离
+          (
+            [
+              xshift = - \l__mf_left_shift_dim,   % 左偏移
+              yshift = - \l__mf_bottom_shift_dim, % 下偏移
+            ]
+            current~ page~ text~ area . south~ west % 左下
+          )
+          rectangle
+          (
+            [
+              xshift = \l__mf_right_shift_dim, % 右偏移
+              yshift = \l__mf_top_shift_dim,   % 上偏移
+            ]
+            current~ page~ text~ area . north~ east % 右上
+          ) ;
+  }
+\tl_set:Nn \l__mf_paperframe_tl
+  {
+    \tikz [ remember~ picture, overlay ]
+      \draw
+        [
+          line~ width = \l__mf_line_width_dim,
+          color = \l__mf_color_tl
+        ] % 需要向内偏移一定距离
+        (
+          [
+            xshift = \l__mf_left_shift_dim,   % 左偏移
+            yshift = \l__mf_bottom_shift_dim, % 下偏移
+          ]
+          current~ page . south~ west % 左下
+        )
         rectangle
-        ( current~ page~ text~ area . north~ east ) ;
+        (
+          [
+            xshift = - \l__mf_right_shift_dim, % 右偏移
+            yshift = - \l__mf_top_shift_dim,   % 上偏移
+          ]
+          current~ page . north~ east % 右上
+        ) ;
   }
 
+% 宏包选项
+\keys_define:nn { mainframe / option }
+  {
+    allpage      .code:n =  { \tl_set_eq:NN \l__mf_frame_tl \l__mf_textframe_tl  },
+    allpage*     .code:n =  { \tl_set_eq:NN \l__mf_frame_tl \l__mf_paperframe_tl },
+  }
+% mainframe / option 继承 mainframe 的所有选项
+\keys_define:nn { }
+  {  mainframe / option .inherit:n = { mainframe } }
+\ProcessKeysOptions { mainframe / option }
+
+
+\cs_new:Npn \__mf_update_setting:
+  {
+    \dim_set:Nn \l__mf_left_shift_dim   { \l__mf_line_width_dim / 2 + \l__mf_left_shift_set_dim   }
+    \dim_set:Nn \l__mf_right_shift_dim  { \l__mf_line_width_dim / 2 + \l__mf_right_shift_set_dim  }
+    \dim_set:Nn \l__mf_top_shift_dim    { \l__mf_line_width_dim / 2 + \l__mf_top_shift_set_dim    }
+    \dim_set:Nn \l__mf_bottom_shift_dim { \l__mf_line_width_dim / 2 + \l__mf_bottom_shift_set_dim }
+  }
 % 参考自 https://tex.stackexchange.com/a/296862
-\tl_new:N \g__mf_frame_tl
-\AtBeginShipout { \AtBeginShipoutAddToBox { \g__mf_frame_tl } }
+\AtBeginShipout { \AtBeginShipoutAddToBox { \__mf_update_setting: \l__mf_frame_tl } }
 
 
-\NewDocumentEnvironment { mfpage } { }
+
+\NewDocumentEnvironment { mfpage } { O{} }
   {
     \cleardoublepage
-    \tl_gset_eq:NN \g__mf_frame_tl \g__mf_main_frame_tl
+    \tl_if_blank:nF {#1} { \mfsetup {#1} }
+    \tl_set_eq:NN \l__mf_frame_tl \l__mf_textframe_tl
   }
   {
     \cleardoublepage
-    \tl_gclear:N \g__mf_frame_tl
+    \tl_clear:N \l__mf_frame_tl
+  }
+
+\NewDocumentEnvironment { mfpage* } { O{} }
+  {
+    \cleardoublepage
+    \tl_if_blank:nF {#1} { \mfsetup {#1} }
+    \tl_set_eq:NN \l__mf_frame_tl \l__mf_paperframe_tl
+  }
+  {
+    \cleardoublepage
+    \tl_clear:N \l__mf_frame_tl
   }
 
 \endinput
 %%
 %% End of file `mainframe.sty'.
-
