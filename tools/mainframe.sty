@@ -1,37 +1,195 @@
 % !TeX root = ./demo.tex
 %% mainframe.sty 2023/02/11 version V0.1  by Sunben Chiu
-
+%% mainframe.sty 2023/02/12 version V0.2  by Sunben Chiu
+%% mainframe.sty 2023/02/12 version V0.3  by Sunben Chiu
+%% mainframe.sty 2023/02/13 version V0.4  by Sunben Chiu
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{mainframe}{2023-02-11}{0.1}{Sunben Chiu}
-
+\ProvidesExplPackage{mainframe}{2023-02-13}{0.4}{Sunben Chiu}
 \RequirePackage { tikzpagenodes, atbegshi }
 
+\dim_new:N \l__mf_left_shift_set_dim
+\dim_new:N \l__mf_left_shift_dim
+\dim_new:N \l__mf_right_shift_set_dim
+\dim_new:N \l__mf_right_shift_dim
+\dim_new:N \l__mf_top_shift_set_dim
+\dim_new:N \l__mf_top_shift_dim
+\dim_new:N \l__mf_bottom_shift_set_dim
+\dim_new:N \l__mf_bottom_shift_dim
+\tl_new:N  \l__mf_innerframe_tl
+
+\clist_map_inline:nn { set, add }
+  {
+    \cs_new:cpn { __mf_xshift_ #1 : n } ##1
+      {
+        \use:c { dim_ #1 : Nn } \l__mf_left_shift_set_dim   {##1}
+        \use:c { dim_ #1 : Nn } \l__mf_right_shift_set_dim  {##1}
+      }
+    \cs_new:cpn { __mf_yshift_ #1 : n } ##1
+      {
+        \use:c { dim_ #1 : Nn } \l__mf_top_shift_set_dim    {##1}
+        \use:c { dim_ #1 : Nn } \l__mf_bottom_shift_set_dim {##1}
+      }
+    \cs_new:cpn { __mf_shift_ #1 : n } ##1
+      {
+        \use:c { __mf_xshift_ #1 : n } {##1}
+        \use:c { __mf_yshift_ #1 : n } {##1}
+      }
+  }
+
+\cs_new:Npn \__mf_plus_key_aux_lrtb:n #1
+  {
+    #1  .dim_set:c = { l__mf_ #1 _shift_set_dim }, % 需要预定义变量
+    #1  .initial:n = { 0pt },
+    #1   + .code:n = { \dim_add:cn { l__mf_ #1 _shift_set_dim } {##1} },
+    #1 ~ + .code:n = { \dim_add:cn { l__mf_ #1 _shift_set_dim } {##1} }
+  }
+\cs_new:Npn \__mf_plus_key_aux_shift:n #1
+  {
+    #1     .code:n = { \__mf_shift_set:nnn { set } {#1} {##1} },
+    #1 ~ + .code:n = { \__mf_shift_set:nnn { add } {#1} {##1} },
+    #1   + .code:n = { \__mf_shift_set:nnn { add } {#1} {##1} }
+  }
+\cs_new:Npn \__mf_shift_set:nnn #1#2#3 { \use:c { __mf_ #2 _ #1 : n } {#3} }
+
+% 用户接口选项
+% 若用 \keys_define:nx 则上面应该用 ####1 而非 ##1 ，这是 e-type 和 x-type 的区别
+\cs_generate_variant:Nn \keys_define:nn { ne }
+\keys_define:nn { mainframe }
+  {
+    linewidth .dim_set:N  = \l__mf_line_width_dim,
+    linewidth .initial:n  = { 0.4pt },
+    linewidth   + .code:n = { \dim_add:Nn \l__mf_line_width_dim {#1} },
+    linewidth ~ + .code:n = { \dim_add:Nn \l__mf_line_width_dim {#1} },
+    style   .clist_set:N  = \l__mf_tikz_style_clist,
+    style   +    .code:n  = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
+    style ~ +    .code:n  = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
+  }
+\keys_define:ne { mainframe }
+  {
+    \__mf_plus_key_aux_lrtb:n  { left   },
+    \__mf_plus_key_aux_lrtb:n  { right  },
+    \__mf_plus_key_aux_lrtb:n  { top    },
+    \__mf_plus_key_aux_lrtb:n  { bottom },
+    \__mf_plus_key_aux_shift:n { shift  },
+    \__mf_plus_key_aux_shift:n { xshift },
+    \__mf_plus_key_aux_shift:n { yshift },
+  }
+
+\cs_new:Npn \__mf_clear_setting:
+  {
+    \dim_zero:N    \l__mf_left_shift_set_dim
+    \dim_zero:N    \l__mf_right_shift_set_dim
+    \dim_zero:N    \l__mf_top_shift_set_dim
+    \dim_zero:N    \l__mf_bottom_shift_set_dim
+    \dim_set:Nn    \l__mf_line_width_dim { 0.4pt }
+    \clist_clear:N \l__mf_tikz_style_clist
+  }
+\NewDocumentCommand { \mfsetup } { s m }
+  {
+    \IfBooleanT {#1} { \__mf_clear_setting: }
+    \keys_set:nn { mainframe } {#2}
+  }
+
 % 参考自 https://tex.stackexchange.com/a/449294
-\tl_set:Nn \g__mf_main_frame_tl
+% #1: anchor point, #2: style clist
+% #3: left shift, #4: bottom shift, #5: right shift, #6: top shift
+\cs_new:Npn \__mf_make_innerframe:nnnnnn #1#2#3#4#5#6
   {
     \tikz [ remember~ picture, overlay ]
       \draw
-        ( current~ page~ text~ area . south~ west )
+        [
+          line~ width = \l__mf_line_width_dim, % 需要向内/外偏离一定距离
+          #2
+        ]
+        (
+          [ xshift = #3, yshift = #4 ]
+          #1 . south~ west % 左下
+        )
         rectangle
-        ( current~ page~ text~ area . north~ east ) ;
+        (
+          [ xshift = #5, yshift = #6 ]
+          #1 . north~ east % 右上
+        ) ;
   }
+
+\cs_generate_variant:Nn \__mf_make_innerframe:nnnnnn { nxnnnn }
+\tl_set:Nn \l__mf_textframe_tl
+  {
+    \__mf_make_innerframe:nxnnnn
+      { current~ page~ text~ area }
+      { \l__mf_tikz_style_clist }
+      { - \l__mf_left_shift_dim }
+      { - \l__mf_bottom_shift_dim }
+      { \l__mf_right_shift_dim }
+      { \l__mf_top_shift_dim }
+  }
+\tl_set:Nn \l__mf_paperframe_tl
+  {
+    \__mf_make_innerframe:nxnnnn
+      { current~ page }
+      { \l__mf_tikz_style_clist }
+      { \l__mf_left_shift_dim }
+      { \l__mf_bottom_shift_dim }
+      { - \l__mf_right_shift_dim }
+      { - \l__mf_top_shift_dim }
+  }
+
+% 宏包选项
+\keys_define:nn { mainframe / option }
+  {
+    allpage      .code:n =  { \tl_set_eq:NN \l__mf_innerframe_tl \l__mf_textframe_tl  },
+    allpage*     .code:n =  { \tl_set_eq:NN \l__mf_innerframe_tl \l__mf_paperframe_tl },
+  }
+% mainframe / option 继承 mainframe 的所有选项
+\keys_define:nn { }
+  {  mainframe / option .inherit:n = { mainframe } }
+\ProcessKeysOptions { mainframe / option }
+
+
+\cs_new:Npn \__mf_update_setting:
+  {
+    \dim_set:Nn \l__mf_left_shift_dim   { \l__mf_line_width_dim / 2 + \l__mf_left_shift_set_dim   }
+    \dim_set:Nn \l__mf_right_shift_dim  { \l__mf_line_width_dim / 2 + \l__mf_right_shift_set_dim  }
+    \dim_set:Nn \l__mf_top_shift_dim    { \l__mf_line_width_dim / 2 + \l__mf_top_shift_set_dim    }
+    \dim_set:Nn \l__mf_bottom_shift_dim { \l__mf_line_width_dim / 2 + \l__mf_bottom_shift_set_dim }
+  }
+\tl_set:Nn \l__mf_frame_tl { \__mf_update_setting: \l__mf_innerframe_tl }
 
 % 参考自 https://tex.stackexchange.com/a/296862
-\tl_new:N \g__mf_frame_tl
-\AtBeginShipout { \AtBeginShipoutAddToBox { \g__mf_frame_tl } }
+\AtBeginShipout { \AtBeginShipoutAddToBox { \l__mf_frame_tl } }
 
 
-\NewDocumentEnvironment { mfpage } { }
+% #1: environment name, #2: *, #3: tl val
+\cs_new:Npn \__mf_new_environment_from:nnN #1#2#3
   {
-    \cleardoublepage
-    \tl_gset_eq:NN \g__mf_frame_tl \g__mf_main_frame_tl
+    \NewDocumentEnvironment {#1} { O{} }
+      {
+        \cleardoublepage
+        \mfsetup #2 {##1}
+        \tl_set_eq:NN \l__mf_innerframe_tl #3
+      }
+      {
+        \cleardoublepage
+        \tl_clear:N \l__mf_innerframe_tl
+      }
   }
-  {
-    \cleardoublepage
-    \tl_gclear:N \g__mf_frame_tl
-  }
+
+% #1: environment name, #2: tl val
+\cs_new:Npn \__mf_new_innerframe:nN #1#2
+  { \__mf_new_environment_from:nnN {#1} {   } #2 }
+\cs_new:Npn \__mf_new_innerframe_star:nN #1#2
+  { \__mf_new_environment_from:nnN {#1} { * } #2 }
+
+\__mf_new_innerframe:nN { mftext  } \l__mf_textframe_tl
+\__mf_new_innerframe:nN { mfpaper } \l__mf_paperframe_tl
+\__mf_new_innerframe_star:nN { mftext*  } \l__mf_textframe_tl
+\__mf_new_innerframe_star:nN { mfpaper* } \l__mf_paperframe_tl
+
+\NewDocumentEnvironment { mfpage  } { O{} }
+  { \begin { mftext  } [#1] } { \end { mftext  } }
+\NewDocumentEnvironment { mfpage* } { O{} }
+  { \begin { mftext* } [#1] } { \end { mftext* } }
 
 \endinput
 %%
 %% End of file `mainframe.sty'.
-
