@@ -56,11 +56,13 @@
 \cs_generate_variant:Nn \keys_define:nn { ne }
 \keys_define:nn { mainframe }
   {
-    linewidth .dim_set:N = \l__mf_line_width_dim,
-    linewidth .initial:n = { 0.4pt },
-    style   .clist_set:N = \l__mf_tikz_style_clist,
-    style   +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
-    style ~ +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
+    linewidth .dim_set:N  = \l__mf_line_width_dim,
+    linewidth .initial:n  = { 0.4pt },
+    linewidth   + .code:n = { \dim_add:Nn \l__mf_line_width_dim {#1} },
+    linewidth ~ + .code:n = { \dim_add:Nn \l__mf_line_width_dim {#1} },
+    style   .clist_set:N  = \l__mf_tikz_style_clist,
+    style   +    .code:n  = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
+    style ~ +    .code:n  = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
   }
 \keys_define:ne { mainframe }
   {
