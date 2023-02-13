@@ -1,8 +1,9 @@
 % !TeX root = ./demo.tex
 %% mainframe.sty 2023/02/11 version V0.1  by Sunben Chiu
 %% mainframe.sty 2023/02/12 version V0.2  by Sunben Chiu
+%% mainframe.sty 2023/02/12 version V0.3  by Sunben Chiu
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{mainframe}{2023-02-12}{0.2}{Sunben Chiu}
+\ProvidesExplPackage{mainframe}{2023-02-12}{0.3}{Sunben Chiu}
 \RequirePackage { tikzpagenodes, atbegshi }
 
 \dim_new:N \l__mf_left_shift_set_dim
@@ -58,6 +59,9 @@
     color      .tl_set:N = \l__mf_color_tl,
     linewidth .initial:n = { 0.4pt },
     color     .initial:n = { black },
+    style   .clist_set:N = \l__mf_tikz_style_clist,
+    style   +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
+    style ~ +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
   }
 \keys_define:nx { mainframe }
   {
@@ -72,12 +76,13 @@
 
 \cs_new:Npn \__mf_clear_setting:
   {
-    \dim_zero:N \l__mf_left_shift_set_dim
-    \dim_zero:N \l__mf_right_shift_set_dim
-    \dim_zero:N \l__mf_top_shift_set_dim
-    \dim_zero:N \l__mf_bottom_shift_set_dim
-    \dim_set:Nn \l__mf_line_width_dim { 0.4pt }
-    \tl_set:Nn  \l__mf_color_tl       { black }
+    \dim_zero:N    \l__mf_left_shift_set_dim
+    \dim_zero:N    \l__mf_right_shift_set_dim
+    \dim_zero:N    \l__mf_top_shift_set_dim
+    \dim_zero:N    \l__mf_bottom_shift_set_dim
+    \clist_clear:N \l__mf_tikz_style_clist
+    \dim_set:Nn    \l__mf_line_width_dim { 0.4pt }
+    \tl_set:Nn     \l__mf_color_tl       { black }
   }
 \NewDocumentCommand { \mfsetup } { s m }
   {
@@ -86,53 +91,48 @@
   }
 
 % 参考自 https://tex.stackexchange.com/a/449294
-\tl_set:Nn \l__mf_textframe_tl
+% #1: anchor point, #2: style clist
+% #3: left shift, #4: bottom shift, #5: right shift, #6: top shift
+\cs_new:Npn \__mf_make_frame:nnnnnn #1#2#3#4#5#6
   {
     \tikz [ remember~ picture, overlay ]
       \draw
         [
-          line~ width = \l__mf_line_width_dim,
-          color = \l__mf_color_tl
-        ] % 需要向外偏移一定距离
-          (
-            [
-              xshift = - \l__mf_left_shift_dim,   % 左偏移
-              yshift = - \l__mf_bottom_shift_dim, % 下偏移
-            ]
-            current~ page~ text~ area . south~ west % 左下
-          )
-          rectangle
-          (
-            [
-              xshift = \l__mf_right_shift_dim, % 右偏移
-              yshift = \l__mf_top_shift_dim,   % 上偏移
-            ]
-            current~ page~ text~ area . north~ east % 右上
-          ) ;
-  }
-\tl_set:Nn \l__mf_paperframe_tl
-  {
-    \tikz [ remember~ picture, overlay ]
-      \draw
-        [
-          line~ width = \l__mf_line_width_dim,
-          color = \l__mf_color_tl
-        ] % 需要向内偏移一定距离
+          line~ width = \l__mf_line_width_dim, % 需要向内/外偏离一定距离
+          draw        = \l__mf_color_tl,
+          #2
+        ]
         (
-          [
-            xshift = \l__mf_left_shift_dim,   % 左偏移
-            yshift = \l__mf_bottom_shift_dim, % 下偏移
-          ]
-          current~ page . south~ west % 左下
+          [ xshift = #3, yshift = #4 ]
+          #1 . south~ west % 左下
         )
         rectangle
         (
-          [
-            xshift = - \l__mf_right_shift_dim, % 右偏移
-            yshift = - \l__mf_top_shift_dim,   % 上偏移
-          ]
-          current~ page . north~ east % 右上
+          [ xshift = #5, yshift = #6 ]
+          #1 . north~ east % 右上
         ) ;
+  }
+
+\cs_generate_variant:Nn \__mf_make_frame:nnnnnn { nxnnnn }
+\tl_set:Nn \l__mf_textframe_tl
+  {
+    \__mf_make_frame:nxnnnn
+      { current~ page~ text~ area }
+      { \l__mf_tikz_style_clist }
+      { - \l__mf_left_shift_dim }
+      { - \l__mf_bottom_shift_dim }
+      { \l__mf_right_shift_dim }
+      { \l__mf_top_shift_dim }
+  }
+\tl_set:Nn \l__mf_paperframe_tl
+  {
+    \__mf_make_frame:nxnnnn
+      { current~ page }
+      { \l__mf_tikz_style_clist }
+      { \l__mf_left_shift_dim }
+      { \l__mf_bottom_shift_dim }
+      { - \l__mf_right_shift_dim }
+      { - \l__mf_top_shift_dim }
   }
 
 % 宏包选项
