@@ -57,9 +57,7 @@
 \keys_define:nn { mainframe }
   {
     linewidth .dim_set:N = \l__mf_line_width_dim,
-    color      .tl_set:N = \l__mf_color_tl,
     linewidth .initial:n = { 0.4pt },
-    color     .initial:n = { black },
     style   .clist_set:N = \l__mf_tikz_style_clist,
     style   +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
     style ~ +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
@@ -81,9 +79,8 @@
     \dim_zero:N    \l__mf_right_shift_set_dim
     \dim_zero:N    \l__mf_top_shift_set_dim
     \dim_zero:N    \l__mf_bottom_shift_set_dim
-    \clist_clear:N \l__mf_tikz_style_clist
     \dim_set:Nn    \l__mf_line_width_dim { 0.4pt }
-    \tl_set:Nn     \l__mf_color_tl       { black }
+    \clist_clear:N \l__mf_tikz_style_clist
   }
 \NewDocumentCommand { \mfsetup } { s m }
   {
@@ -100,7 +97,6 @@
       \draw
         [
           line~ width = \l__mf_line_width_dim, % 需要向内/外偏离一定距离
-          draw        = \l__mf_color_tl,
           #2
         ]
         (
