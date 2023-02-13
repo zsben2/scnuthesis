@@ -165,7 +165,7 @@
     \NewDocumentEnvironment {#1} { O{} }
       {
         \cleardoublepage
-        \tl_if_blank:nF {##1} { \mfsetup #2 {##1} }
+        \mfsetup #2 {##1}
         \tl_set_eq:NN \l__mf_innerframe_tl #3
       }
       {
