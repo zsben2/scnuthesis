@@ -55,11 +55,13 @@
 \cs_generate_variant:Nn \keys_define:nn { nx }
 \keys_define:nn { mainframe }
   {
-    style   .clist_set:N = \l__mf_tikz_style_clist,
     linewidth .dim_set:N = \l__mf_line_width_dim,
     color      .tl_set:N = \l__mf_color_tl,
     linewidth .initial:n = { 0.4pt },
     color     .initial:n = { black },
+    style   .clist_set:N = \l__mf_tikz_style_clist,
+    style   +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
+    style ~ +    .code:n = { \clist_put_right:Nn \l__mf_tikz_style_clist {#1} },
   }
 \keys_define:nx { mainframe }
   {
