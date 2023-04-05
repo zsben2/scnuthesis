@@ -1,8 +1,9 @@
 % !TeX root = ./main.tex
 %% l3group.sty 2023/02/09 version V1.0  by Sunben Chiu
+%% l3group.sty 2023/03/28 version V1.1  by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{l3group}{2023/02/09}{v1.0}{Sunben Chiu}
+\ProvidesExplPackage{l3group}{2023/03/28}{v1.1}{Sunben Chiu}
 
 % Decorator
 
@@ -32,9 +33,15 @@
   {
     \tl_set:cn { #1 _f } {#4} % format
     \tl_set:cn { #1 _t } {#5} % text
-    \tl_set:cn {#1} { \group_use:n {#4#5} }
+    \tl_set:cn {#1}
+      {
+        \group_use:n
+          {
+            \tl_use:c { #1 _f }
+            \tl_use:c { #1 _t }
+          }
+      }
   }
-
 \endinput
 %%
 %% End of file `l3group.sty'.

@@ -10,10 +10,11 @@
 %% scnuthesis.cls 2023/02/11 version v0.5 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/11 version v0.6 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/11 version v0.7 created by Sunben Chiu
+%% scnuthesis.cls 2023/03/30 version v0.8 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023-02-11}{0.7}{Typesetting thesis for South China Normal University}
+\ProvidesExplClass{scnuthesis}{2023-03-30}{0.8}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
@@ -148,26 +149,29 @@
   { \RequirePackage { lscape } }
   {
     \RequirePackage { pdflscape }
-    \ctex_hypersetup:n
+    \__scnu_edition_if_blindreview:F
       {
-        colorlinks,
-        linkcolor = red,
-        citecolor = green,
-        urlcolor = blue
+        \ctex_hypersetup:n
+          {
+            colorlinks,
+            linkcolor = red,
+            citecolor = green,
+            urlcolor = blue
+          }
       }
   }
 \ctex_hypersetup:n { bookmarksnumbered, pdfdisplaydoctitle }
 \RequirePackage
   {
-    mathtools, amsthm, amssymb, tabularx, booktabs, pdfpages,
+    mathtools, amsthm, tabularx, booktabs, pdfpages, % amssymb,
     graphicx, subfigure, caption, fancyhdr, stfloats, xpatch,
     wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp,
   }
 % 自定义宏包
 \clist_map_inline:nn { l3group, tblrhook, circlenum, mainframe }
   { \RequirePackage { tools / #1 } }
-\cs_undefine:N \Bbbk
-\RequirePackage { mtpro2 }
+% \cs_undefine:N \Bbbk % 与 amssymb 同时注释掉
+\RequirePackage [ mtphrb, subscriptcorrection ] { mtpro2 }
 \RequirePackage [
   backend      = biber,
   style        = gb7714-2015,
@@ -428,10 +432,10 @@
       {
         \file_if_exist:nTF { fig / #1 }
           {
-            \tl_set:Nn \l__scnu_statement_tl
+            \tl_set:Nn \l__scnu_statement_page_tl
               { \includepdf [ pages = -, landscape, fitpaper ] { fig / #1 } }
           }
-          { \tl_set:Nn \l__scnu_statement_tl { \l__scnu_statement_text_tl } }
+          { \tl_set:Nn \l__scnu_statement_page_tl { \l__scnu_statement_text_tl } }
       },
 
     分类号	  .initial:n = { },
@@ -460,17 +464,25 @@
   }
 
 
+\cs_new:Npn \__scnu_gset_XXX:N #1
+  { \tl_gset:Nn #1 { XXX } }
 
 \AtBeginDocument
   {
     \__scnu_edition_if_blindreview:T
       {
-        \tl_gclear:N \g__scnu_name_cn_tl
-        \tl_gclear:N \g__scnu_name_en_tl
-        \tl_gclear:N \g__scnu_email_tl
-        \tl_gclear:N \g__scnu_tutor_cn_tl
-        \tl_gclear:N \g__scnu_tutor_en_tl
+        \__scnu_gset_XXX:N \g__scnu_name_cn_tl
+        \__scnu_gset_XXX:N \g__scnu_name_en_tl
+        \__scnu_gset_XXX:N \g__scnu_sno_tl
+        \__scnu_gset_XXX:N \g__scnu_email_tl
+        \__scnu_gset_XXX:N \g__scnu_phone_tl
+        \__scnu_gset_XXX:N \g__scnu_tutor_cn_tl
+        \__scnu_gset_XXX:N \g__scnu_tutor_en_tl
         \tl_gclear:N \g__scnu_tutor_title_tl
+        \tl_set:Nn \c__scnu_name_tl { XXXX大学 }
+        \tl_set:Nn \l__scnu_cover_school_name_tl_t { XXXX ~ University }
+        \group_tl_set:Nn \l__scnu_cover_graphname_tl
+          { \includegraphics [ width = 11cm ] { blankname } }
       }
   }
 
@@ -557,6 +569,8 @@
   }
 \group_tl_set:Nnn \l__scnu_cover_date_tl
   { \fangsong } { \g__scnu_date_tl }
+\group_tl_set:Nn \l__scnu_cover_graphname_tl
+  { \includegraphics [ width = 11cm ] { scnuname } }
 
 
 \NewDocumentCommand \makecover { }
@@ -564,7 +578,7 @@
     \pagestyle { empty }
     \begin { center }
       \l__scnu_cover_head_tl \\[15mm]
-      \includegraphics [ width = 11cm ] { scnuname } \\
+      \l__scnu_cover_graphname_tl \\
       \l__scnu_cover_school_name_tl \\[1mm]
       \l__scnu_cover_degree_type_tl \\[2mm]
       \l__scnu_cover_master_type_tl \\
@@ -854,16 +868,16 @@
     \__scnu_statement_signature:
   }
 
-\NewDocumentCommand \statement { s }
+\tl_set:Nn \l__scnu_statement_tl
   {
     \cleardoublepage
     \phantomsection
     \addcontentsline { toc } { chapter }
       { 学位论文原创性声明、学位论文使用授权声明 }
-    \l__scnu_statement_tl
+    \l__scnu_statement_page_tl
   }
 
-\NewDocumentCommand \publication { }
+\tl_set:Nn \l__scnu_publication_tl
   {
     \cleardoublepage
     \__scnu_statement_title:n { 《学位论文出版授权书》 }
@@ -918,6 +932,12 @@
     导师电话 & \multicolumn { 3 } { c| } { } \\
     \end { tabularx }
   }
+
+\NewDocumentCommand \statement { s }
+  { \__scnu_edition_if_blindreview:F { \l__scnu_statement_tl } }
+
+\NewDocumentCommand \publication { }
+  { \__scnu_edition_if_blindreview:F { \l__scnu_publication_tl } }
 
 % #1: degree, #2: type, #3: text
 \cs_new:Npn \__scnu_degree_type_checkbox:nn #1#2
