@@ -10,11 +10,11 @@
 %% scnuthesis.cls 2023/02/11 version v0.5 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/11 version v0.6 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/11 version v0.7 created by Sunben Chiu
-%% scnuthesis.cls 2023/03/30 version v0.8 created by Sunben Chiu
+%% scnuthesis.cls 2023/05/08 version v0.8 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023-03-30}{0.8}{Typesetting thesis for South China Normal University}
+\ProvidesExplClass{scnuthesis}{2023-05-08}{0.8}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
@@ -146,7 +146,10 @@
 
 
 \__scnu_edition_if_print:TF
-  { \RequirePackage { lscape } }
+  {
+    \RequirePackage { lscape }
+    \ctex_hypersetup:n { hidelinks }
+  }
   {
     \RequirePackage { pdflscape }
     \__scnu_edition_if_blindreview:F
@@ -163,7 +166,7 @@
 \ctex_hypersetup:n { bookmarksnumbered, pdfdisplaydoctitle }
 \RequirePackage
   {
-    mathtools, amsthm, tabularx, booktabs, pdfpages, % amssymb,
+    mathtools, amsthm, tabularx, booktabs, pdfpages, emptypage, % amssymb,
     graphicx, subfigure, caption, fancyhdr, stfloats, xpatch,
     wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp,
   }
@@ -184,11 +187,11 @@
   includeheadfoot,
   top           = 25mm,
   bottom        = 25mm,
-  left          = 20mm,
-  right         = 20mm,
-  bindingoffset = 10mm,
+  left          = 25mm,
+  right         = 25mm,
+  bindingoffset = 0mm, % 装订宽度
+  headsep       = 0mm, % 页眉线到正文的距离，有页眉时取2-3mm
   headheight    = 9mm,
-  headsep       = 1mm,
   footskip      = 10mm,
 ] { geometry }
 \RequirePackage [
@@ -535,7 +538,7 @@
       {
         \centering
         \tl_if_eq:NnF \g__scnu_degree_tl { 博士 }
-          { ( \g__scnu_type_tl 型学位 ) }
+          { ( \g__scnu_type_tl 学位 ) }
       }
   }
 \group_tl_set:Nnn \l__scnu_cover_title_tl
@@ -755,7 +758,7 @@
     申请者 &
     \g__scnu_name_cn_tl \\
     导师 &
-    \g__scnu_tutor_cn_tl \\
+    \g__scnu_tutor_cn_tl
     \end { tabular }
   }
 \group_tl_set:Nnn \l__scnu_cnabstract_label_tl
@@ -816,7 +819,7 @@
     Name: &
     \g__scnu_name_en_tl \\
     Supervisor: &
-    \g__scnu_tutor_en_tl \\
+    \g__scnu_tutor_en_tl
     \end { tabular }
   }
 \group_tl_set:Nnn \l__scnu_enabstract_label_tl
@@ -842,7 +845,7 @@
     \l__scnu_enabstract_label_tl
     \__scnu_skip_one_line: %\par
   }
-  { \skip_vertical:N 2\baselineskip }
+  { \__scnu_skip_one_line: }
 
 \NewDocumentCommand \enkeywords { m }
   {
