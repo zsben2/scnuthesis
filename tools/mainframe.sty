@@ -3,8 +3,9 @@
 %% mainframe.sty 2023/02/12 version V0.2  by Sunben Chiu
 %% mainframe.sty 2023/02/12 version V0.3  by Sunben Chiu
 %% mainframe.sty 2023/02/13 version V0.4  by Sunben Chiu
+%% mainframe.sty 2023/05/04 version V0.5  by Sunben Chiu
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{mainframe}{2023-02-13}{0.4}{Sunben Chiu}
+\ProvidesExplPackage{mainframe}{2023-05-04}{0.5}{Sunben Chiu}
 \RequirePackage { tikzpagenodes, atbegshi }
 
 \dim_new:N \l__mf_left_shift_set_dim
@@ -164,12 +165,12 @@
   {
     \NewDocumentEnvironment {#1} { O{} }
       {
-        \cleardoublepage
+        \clearpage
         \mfsetup #2 {##1}
         \tl_set_eq:NN \l__mf_innerframe_tl #3
       }
       {
-        \cleardoublepage
+        \clearpage
         \tl_clear:N \l__mf_innerframe_tl
       }
   }
