@@ -10,11 +10,11 @@
 %% scnuthesis.cls 2023/02/11 version v0.5 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/11 version v0.6 created by Sunben Chiu
 %% scnuthesis.cls 2023/02/11 version v0.7 created by Sunben Chiu
-%% scnuthesis.cls 2023/03/30 version v0.8 created by Sunben Chiu
+%% scnuthesis.cls 2023/05/08 version v0.8 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023-03-30}{0.8}{Typesetting thesis for South China Normal University}
+\ProvidesExplClass{scnuthesis}{2023-05-08}{0.8}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
@@ -146,7 +146,10 @@
 
 
 \__scnu_edition_if_print:TF
-  { \RequirePackage { lscape } }
+  {
+    \RequirePackage { lscape }
+    \ctex_hypersetup:n { hidelinks }
+  }
   {
     \RequirePackage { pdflscape }
     \__scnu_edition_if_blindreview:F
@@ -163,7 +166,7 @@
 \ctex_hypersetup:n { bookmarksnumbered, pdfdisplaydoctitle }
 \RequirePackage
   {
-    mathtools, amsthm, tabularx, booktabs, pdfpages, % amssymb,
+    mathtools, amsthm, tabularx, booktabs, pdfpages, emptypage, % amssymb,
     graphicx, subfigure, caption, fancyhdr, stfloats, xpatch,
     wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp,
   }
@@ -184,11 +187,11 @@
   includeheadfoot,
   top           = 25mm,
   bottom        = 25mm,
-  left          = 20mm,
-  right         = 20mm,
-  bindingoffset = 10mm,
+  left          = 25mm,
+  right         = 25mm,
+  bindingoffset = 0mm, % 装订宽度
+  headsep       = 0mm, % 页眉线到正文的距离，有页眉时取2-3mm
   headheight    = 9mm,
-  headsep       = 1mm,
   footskip      = 10mm,
 ] { geometry }
 \RequirePackage [
@@ -394,7 +397,8 @@
 \keys_define:nn { scnu }
   {
     分类号	  .tl_set:N = \g__scnu_category_tl,
-    学校代码	.tl_set:N = \g__scnu_udc_tl,
+    学校代码	.tl_set:N = \g__scnu_code_tl,
+    UDC     .tl_set:N = \g__scnu_udc_tl,
     密级	    .tl_set:N = \g__scnu_secrets_tl,
     学号	    .tl_set:N = \g__scnu_sno_tl,
     学位类型	.tl_set:N = \g__scnu_type_tl,
@@ -412,6 +416,7 @@
     导师姓名	.tl_set:N = \g__scnu_tutor_cn_tl,
     tutor   .tl_set:N = \g__scnu_tutor_en_tl,
     导师职称	.tl_set:N = \g__scnu_tutor_title_tl,
+    导师手机	.tl_set:N = \g__scnu_tutor_phone_tl,
     date    .tl_set:N = \g__scnu_date_tl,
 
     bib文件名	.code:n = { \addbibresource {#1} },
@@ -440,6 +445,7 @@
 
     分类号	  .initial:n = { },
     学校代码	.initial:n = { },
+    UDC     .initial:n = { },
     密级	    .initial:n = { },
     学号	    .initial:n = { },
     学位类型	.initial:n = { },
@@ -457,6 +463,7 @@
     导师姓名	.initial:n = { },
     tutor   .initial:n = { },
     导师职称	.initial:n = { },
+    导师手机	.initial:n = { },
     date    .initial:n = { \today },
     签名图	  .initial:n = { \g__scnu_name_cn_tl },
     答辩通过证明 .initial:n = { },
@@ -506,7 +513,7 @@
     \tb_tabular_add_to_cr:n { \cline{2-2} \cline{5-5} }
     \begin { tabularx } { \linewidth }
       {
-        s{ 4\ccwd } @{：}
+        l @{：}
         l
         X
         l @{：}
@@ -516,7 +523,7 @@
     \__scnu_cover_head_underline:N \g__scnu_category_tl &&
     密级 &
     \__scnu_cover_head_underline:N \g__scnu_secrets_tl \\
-    学校代码 &
+    UDC &
     \__scnu_cover_head_underline:N \g__scnu_udc_tl &&
     学号 &
     \__scnu_cover_head_underline:N \g__scnu_sno_tl \\
@@ -535,7 +542,7 @@
       {
         \centering
         \tl_if_eq:NnF \g__scnu_degree_tl { 博士 }
-          { ( \g__scnu_type_tl 型学位 ) }
+          { ( \g__scnu_type_tl 学位 ) }
       }
   }
 \group_tl_set:Nnn \l__scnu_cover_title_tl
@@ -614,7 +621,9 @@
     \CJKunderline { \__scnu_content_min_wd:nV { 4em } \g__scnu_name_cn_tl }
     向本学位论文答辩委员会提交题为
     \CJKunderline { \__scnu_content_min_wd:nV { 15em } \g__scnu_title_cn_tl }
-    的博士/硕士论文，经答辩委员会审议，本论文答辩合格，特此证明。
+    的
+    \g__scnu_degree_tl
+    论文，经答辩委员会审议，本论文答辩合格，特此证明。
   }
 \group_tl_set:Nn \l__scnu_passdefense_instructor_tl
   {
@@ -660,7 +669,7 @@
     \dim_set_eq:NN \rightskip \leftskip % 右版心缩进
     \__scnu_statement_title:n { \c__scnu_name_tl 研究生学位论文答辩合格证明 }
     \l__scnu_passdefense_proof_tl
-    \__scnu_statement_title:n { 博士 / 硕士学位论文答辩委员会成员名单 }
+    \__scnu_statement_title:n { \g__scnu_degree_tl 学位论文答辩委员会成员名单 }
     \__scnu_passdefense_memberlist:n {#1}
     \__scnu_skip_one_line:
     \l__scnu_passdefense_instructor_tl
@@ -719,7 +728,8 @@
           },
         pdfinfo       = {
           分类号	      = { \g__scnu_category_tl },
-          学校代码	    = { \g__scnu_udc_tl },
+          学校代码	    = { \g__scnu_code_tl },
+          UDC         = { \g__scnu_udc_tl },
           密级	        = { \g__scnu_secrets_tl },
           学号	        = { \g__scnu_sno_tl },
           培养层次	    = { \g__scnu_degree_tl },
@@ -755,7 +765,7 @@
     申请者 &
     \g__scnu_name_cn_tl \\
     导师 &
-    \g__scnu_tutor_cn_tl \\
+    \g__scnu_tutor_cn_tl
     \end { tabular }
   }
 \group_tl_set:Nnn \l__scnu_cnabstract_label_tl
@@ -816,7 +826,7 @@
     Name: &
     \g__scnu_name_en_tl \\
     Supervisor: &
-    \g__scnu_tutor_en_tl \\
+    \g__scnu_tutor_en_tl
     \end { tabular }
   }
 \group_tl_set:Nnn \l__scnu_enabstract_label_tl
@@ -842,7 +852,7 @@
     \l__scnu_enabstract_label_tl
     \__scnu_skip_one_line: %\par
   }
-  { \skip_vertical:N 2\baselineskip }
+  { \__scnu_skip_one_line: }
 
 \NewDocumentCommand \enkeywords { m }
   {
@@ -927,7 +937,8 @@
     作者电话 & \g__scnu_phone_tl &
     作者 Email & \multicolumn { 3 } { c| } { \g__scnu_email_tl } \\
     第一导师姓名 & \g__scnu_tutor_cn_tl &
-    导师电话 & \multicolumn { 3 } { c| } { } \\
+    导师电话 & \multicolumn { 3 } { c| } { \g__scnu_tutor_phone_tl } \\
+    % 目前只支持单导师
     第二导师姓名 & &
     导师电话 & \multicolumn { 3 } { c| } { } \\
     \end { tabularx }
