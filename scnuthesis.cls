@@ -3,18 +3,11 @@
 %%
 %% This is file `scnuthesis.cls',
 %% Template download from https://github.com/zsben2/scnuthesis
-%% scnuthesis.cls 2020/09/26 version v0.1 created by Sunben Chiu
-%% scnuthesis.cls 2022/12/26 version v0.2 created by Sunben Chiu
-%% scnuthesis.cls 2023/02/05 version v0.3 created by Sunben Chiu
-%% scnuthesis.cls 2023/02/10 version v0.4 created by Sunben Chiu
-%% scnuthesis.cls 2023/02/11 version v0.5 created by Sunben Chiu
-%% scnuthesis.cls 2023/02/11 version v0.6 created by Sunben Chiu
-%% scnuthesis.cls 2023/02/11 version v0.7 created by Sunben Chiu
-%% scnuthesis.cls 2023/05/08 version v0.8 created by Sunben Chiu
+%% scnuthesis.cls 2023/05/15 version v1.0 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023-05-08}{0.8}{Typesetting thesis for South China Normal University}
+\ProvidesExplClass{scnuthesis}{2023-05-15}{1.0}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
@@ -178,7 +171,9 @@
 \RequirePackage [
   backend      = biber,
   style        = gb7714-2015,
-  defernumbers = true
+  defernumbers = true,
+  sorting      = nyt,
+  % gbnamefmt    = lowercase, % 将全大写的姓名改为首字母大写
 ] { biblatex }
 \RequirePackage [ perpage ] { footmisc } % 重置文档每页的脚注编号
 % 页面设置
