@@ -50,7 +50,10 @@
   {
     edition .choices:xn = { \seq_use:Nn \c__scnu_edition_seq { , } }
       { \tl_gset_eq:NN \g__scnu_edition_tl \l_keys_choice_tl },
-    edition  .initial:n = { electronic }
+    edition  .initial:n = { electronic },
+    header  .bool_set:N = \g__scnu_header_bool,
+    header   .initial:n = { false },
+    header   .default:n = { true },
   }
 \ProcessKeysOptions { scnu / option }
 
@@ -159,15 +162,13 @@
 \ctex_hypersetup:n { bookmarksnumbered, pdfdisplaydoctitle }
 \RequirePackage
   {
-    mathtools, amsthm, tabularx, booktabs, pdfpages, emptypage, % amssymb,
-    graphicx, subfigure, caption, fancyhdr, stfloats, xpatch,
+    mathtools, amsthm, tabularx, booktabs, pdfpages, emptypage, amssymb,
+    graphicx, subfigure, caption, fancyhdr, stfloats, xpatch, newtxmath,
     wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp,
   }
 % 自定义宏包
 \clist_map_inline:nn { l3group, tblrhook, circlenum, mainframe }
   { \RequirePackage { tools / #1 } }
-% \cs_undefine:N \Bbbk % 与 amssymb 同时注释掉
-\RequirePackage [ mtphrb, subscriptcorrection ] { mtpro2 }
 \RequirePackage [
   backend      = biber,
   style        = gb7714-2015,
@@ -185,9 +186,9 @@
   left          = 25mm,
   right         = 25mm,
   bindingoffset = 0mm, % 装订宽度
-  headsep       = 0mm, % 页眉线到正文的距离，有页眉时取2-3mm
   headheight    = 9mm,
   footskip      = 10mm,
+  headsep       = 2mm, % 页眉线到正文的距离
 ] { geometry }
 \RequirePackage [
   shortlabels,
@@ -215,15 +216,23 @@
 
 % 页眉页脚
 \fancyhf { }
-% \fancyhead [ C ] { \g__scnu_title_cn_tl }
+\fancyhead [ C ]
+  {
+    \bool_if:NT \g__scnu_header_bool
+      { \g__scnu_title_cn_tl }
+  }
 \fancyfoot [ C ] { \zihao { 5 } \thepage }
 \fancypagestyle { plain }
   {
-    % \fancyhead [ C ] { \g__scnu_title_cn_tl }
+    \bool_if:NT \g__scnu_header_bool
+      { \fancyhead [ C ] { \g__scnu_title_cn_tl } }
     \fancyfoot [ C ] { \zihao { 5 } \thepage }
   }
-% \RenewDocumentCommand \headrulewidth { } { .4pt }
-\RenewDocumentCommand \headrulewidth { } { 0pt }
+\RenewDocumentCommand \headrulewidth { }
+  {
+    \bool_if:NTF \g__scnu_header_bool
+      { .4pt } { 0pt }
+  }
 
 
 % 计数器
