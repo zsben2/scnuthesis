@@ -4,10 +4,11 @@
 %% This is file `scnuthesis.cls',
 %% Template download from https://github.com/zsben2/scnuthesis
 %% scnuthesis.cls 2023/05/15 version v1.0 created by Sunben Chiu
+%% scnuthesis.cls 2023/05/22 version v1.1 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023-05-15}{1.0}{Typesetting thesis for South China Normal University}
+\ProvidesExplClass{scnuthesis}{2023-05-22}{1.1}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }

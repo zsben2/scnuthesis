@@ -1,0 +1,1 @@
+texcount -inc -html -v -sum main.tex > scnuThesisTexCountReport.html
