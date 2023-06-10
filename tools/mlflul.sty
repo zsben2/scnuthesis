@@ -1,0 +1,26 @@
+% 多行定宽下划线 Multiline fixed length underline
+% 参考自 https://syvshc.github.io/2021-08-04-thesis-title/
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{mlflul}{2023/06/10}{v1.0}{Sunben Chiu}
+
+\RequirePackage{adjustbox}
+\newlength\myheight
+\newcommand\Mysavedprevdepth{}%
+
+% \UnderlineCentered{<文本宽度>}{<下画线深度>}{<文本内容>}
+\newcommand\UnderlineCentered[3]{%
+  \begin{adjustbox}{minipage=[t]{\dimexpr#1\relax},gstore~totalheight=\myheight,margin=0pt}%
+    \centering\leavevmode#3\par\xdef\Mysavedprevdepth{\the\prevdepth}%
+  \end{adjustbox}%
+  \hspace*{-\dimexpr#1\relax}%
+  \begin{adjustbox}{minipage=[t][\myheight]{\dimexpr#1\relax},margin=0pt}%
+    \vphantom{Eg}\lower\dimexpr#2\relax\hbox to\hsize{\leaders\hrule\hfill\kern0pt}\par
+    \kern-\dimexpr#2\relax
+    \xleaders\vbox to\baselineskip {\vfill\hbox{\lower\dimexpr#2\relax\hbox to\hsize{\leaders\hrule\hfill\kern0pt}}\kern-\dimexpr#2\relax}\vfill
+    \kern\Mysavedprevdepth
+  \end{adjustbox}%
+}%
+
+\endinput
+%%
+%% End of file `mlflul.sty'.

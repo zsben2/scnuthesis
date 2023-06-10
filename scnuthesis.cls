@@ -5,10 +5,11 @@
 %% Template download from https://github.com/zsben2/scnuthesis
 %% scnuthesis.cls 2023/05/15 version v1.0 created by Sunben Chiu
 %% scnuthesis.cls 2023/05/22 version v1.1 created by Sunben Chiu
+%% scnuthesis.cls 2023/06/10 version v1.2 created by Sunben Chiu
 
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{expl3}
-\ProvidesExplClass{scnuthesis}{2023-05-22}{1.1}{Typesetting thesis for South China Normal University}
+\ProvidesExplClass{scnuthesis}{2023-06-10}{1.2}{Typesetting thesis for South China Normal University}
 \RequirePackage { xparse, xtemplate, l3keys2e }
 \tl_const:Nn \c__scnu_name_tl { 华南师范大学 }
 \cs_new:Npn \__scnu_msg_new:nn   { \msg_new:nnn   { scnuthesis } }
@@ -96,7 +97,7 @@
   AutoFakeBold = 3,
   Mapping      = fullwidth-stop,
   ItalicFont   = KaiTi,
-  BoldFont     = SimHei,
+  % BoldFont     = SimHei,
 ]
 
 
@@ -110,6 +111,7 @@
 
 \ctexset {
   % contentsname = { 目\quad 录 },
+  bibname      = {\heiti 参考文献},
   secnumdepth  = subsubsection,
   chapter = {
     number     = \arabic{chapter},
@@ -118,7 +120,8 @@
     format     = \bfseries\heiti\zihao{2}\centering,
     beforeskip = 2ex,
     afterskip  = 3ex plus 1ex minus .2ex,
-    % tocline    = \CTEXnumberline{#1}#2,
+    tocline    = \heiti\CTEXifname{\protect\numberline{\CTEXthechapter\hspace{.3em}}}{}#2,
+    % 调整目录格式参考 https://github.com/CTeX-org/ctex-kit/issues/588
   },
   section = {
     % nameformat = \zihao{3}\bfseries,
@@ -153,10 +156,13 @@
       {
         \ctex_hypersetup:n
           {
-            colorlinks,
             linkcolor = red,
             citecolor = green,
             urlcolor = blue
+          }
+        \__scnu_edition_if_electronic:F
+          {
+            \ctex_hypersetup:n { colorlinks }
           }
       }
   }
@@ -168,7 +174,7 @@
     wasysym, siunitx, mathrsfs, longtable, hyperref, cleveref, hyperxmp,
   }
 % 自定义宏包
-\clist_map_inline:nn { l3group, tblrhook, circlenum, mainframe }
+\clist_map_inline:nn { l3group, tblrhook, circlenum, mainframe, mlflul }
   { \RequirePackage { tools / #1 } }
 \RequirePackage [
   backend      = biber,
@@ -272,7 +278,7 @@
   { } % Space below
   { \kaishu } % body font
   { } % indent amount
-  { \bfseries } % theorem head font
+  { \heiti } % theorem head font
   { . } % punctuation after theorem head
   { 5pt plus 1pt minus 1pt } % space after theorem head
   { } % theorem head spec (cna be left empty, meaning `normal')
@@ -281,7 +287,7 @@
   { }
   { \normalfont }
   { }
-  { \bfseries }
+  { \heiti }
   { . }
   { 5pt plus 1pt minus 1pt }
   { }
@@ -538,10 +544,10 @@
   { \zihao { 3 } \bfseries \itshape }
   { South ~ China ~ Normal ~ University }
 \group_tl_set:Nnn \l__scnu_cover_degree_type_tl
-  { \zihao{ 1 } \bfseries \ziju { .2 } }
+  { \fontsize { 36bp } { \baselineskip } \bfseries \ziju { .2 } }
   { \g__scnu_degree_tl 学位论文 }
 \group_tl_set:Nnn \l__scnu_cover_master_type_tl
-  { \zihao { -3 } }
+  { \zihao { -2 } }
   {
     \parbox [ c ] [ 2cm ] [ t ] { 5cm }
       {
@@ -550,9 +556,21 @@
           { ( \g__scnu_type_tl 学位 ) }
       }
   }
+\box_new:N \l__scnu_title_cn_box
 \group_tl_set:Nnn \l__scnu_cover_title_tl
-  { \zihao { -2 } \bfseries }
-  { \parbox { 9cm } { \centering \g__scnu_title_cn_tl } }
+  { \zihao { -2 } \heiti }
+  {
+    \hbox_set:Nn \l__scnu_title_cn_box \g__scnu_title_cn_tl
+    \dim_compare:nNnTF { \box_wd:N \l__scnu_title_cn_box } < { 11cm }
+      {
+        \CJKunderline { \__scnu_content_min_wd:nn { 11cm } { \g__scnu_title_cn_tl } } \\[1cm]
+        \CJKunderline { \__scnu_content_min_wd:nn { 11cm } { } }
+      }
+      {
+        \linespread { 2.1 } \selectfont
+        \UnderlineCentered { 11cm } { 1.5mm } { \g__scnu_title_cn_tl }
+      }
+  }
 \group_tl_set:Nnn \l__scnu_cover_information_tl
   { \fangsong \zihao { 4 } }
   {
@@ -568,9 +586,9 @@
       }
       学位申请人 &
       \__scnu_cover_mid_underline:V \g__scnu_name_cn_tl  \\
-      专业学位名称 &
+      专业名称 &
       \__scnu_cover_mid_underline:V \g__scnu_major_cn_tl \\
-      专业学位领域 &
+      研究方向 &
       \__scnu_cover_mid_underline:V \g__scnu_field_tl    \\
       所在院系 &
       \__scnu_cover_mid_underline:V \g__scnu_college_tl  \\
@@ -790,7 +808,7 @@
   {
     \cleardoublepage
     \phantomsection
-    \addcontentsline { toc } { chapter } { 摘要 }
+    \addcontentsline { toc } { chapter } { \heiti 摘要 }
     \__scnu_vspace_star:n { 2.4ex }
     \begin { center }
       \l__scnu_cnabstract_title_tl
@@ -878,7 +896,7 @@
     \__scnu_skip_one_line:
 
     \__scnu_statement_title:n { \c__scnu_name_tl 学位论文使用授权声明 }
-    本人完全了解 \c__scnu_name_tl 有关保留、使用学位论文的规定，学校有权保留学位论文并向国家主管部门或其指定机构送交论文的电子版和纸质版。有权将学位论文用于非贏利目的的少量复制并允许论文进入学校图书馆被查阅。有权将学位论文的内容编入有关数据库进行检索。有权将学位论文的标题和摘要汇编出版。保密的学位论文在解密后适用本规定。
+    本论文属于非涉密论文，本人完全了解 \c__scnu_name_tl 有关收集、保留使用学位论文的规定，即研究生在校攻读学位期间论文的知识产权单位属 \c__scnu_name_tl 。学校有权保留学位论文并向国家主管部门或其指定机构送交论文的电子版和纸质版，有权将学位论文用于非赢利目的复制并允许论文进入学校图书馆、院系资料室被查阅和借阅，有权将学位论文的内容编入有关数据库进行检索，可以采用复印、缩印或其他方法保存学位论文。
     \__scnu_skip_one_line:
     \__scnu_statement_signature:
   }
@@ -887,8 +905,8 @@
   {
     \cleardoublepage
     \phantomsection
-    \addcontentsline { toc } { chapter }
-      { 学位论文原创性声明、学位论文使用授权声明 }
+    % \addcontentsline { toc } { chapter }
+      % { 学位论文原创性声明、学位论文使用授权声明 }
     \l__scnu_statement_page_tl
   }
 
